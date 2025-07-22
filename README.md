@@ -1,5 +1,5 @@
 # ABaCo
-![img](docs/assets/mango_fin.svg)
+![img](docs/assets/abaco.svg)
 
 <h1 align="center">ABaCo</h1>
 <p align="center"><em>Batch Effect Correction framework for metagenomic data</em></p>
@@ -30,6 +30,7 @@
 - [Features](#features)
 - [Usage](#usage)
 - [Documentation](#documentation)
+- [Contributing](#contributing)
 - [License](#license)
 
 ## Installation 
@@ -37,4 +38,7 @@
 ## Usage
 ## Documentation
 Tutorials and documentation are available on [Read the Docs](https://abaco.readthedocs.io/) :notebook_with_decorative_cover::grinning:
+## Contributing
+1. Clone the repository
+2. 
 ## License
