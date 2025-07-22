@@ -2,9 +2,9 @@
 # It is used to indicate that the directory in which it resides is a Python package
 from importlib import metadata
 
-__version__ = metadata.version("python_package")
+__version__ = metadata.version("abaco")
 
-from .mockup import hello_world
+from abaco.mockup import hello_world
 
 # The __all__ variable is a list of variables which are imported
 # when a user does "from example import *"
