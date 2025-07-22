@@ -10,7 +10,7 @@ import pandas as pd
 from scipy.stats import gaussian_kde
 import matplotlib.pyplot as plt
 import math
-from ABaCo.BatchEffectDataLoader import class_to_int, one_hot_encoding
+from abaco.BatchEffectDataLoader import class_to_int, one_hot_encoding
 import random
 
 # ---------- PRIOR CLASSES DEFINITIONS ---------- #
