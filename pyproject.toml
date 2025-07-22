@@ -1,19 +1,23 @@
 # ref: https://setuptools.pypa.io/en/stable/userguide/pyproject_config.html
 [project]
-authors = [{ name = "First Last", email = "first.last@gmail.com" }]
-description = "A small example package"
-name = "python_package"
+authors = [{ name = "Edir Sebastián Vidal Castro", email = "edirvidalcastro@gmail.com" }]
+description = "Batch Effect Correction framework for metagenomic data"
+name = "abaco"
 # This means: Load the version from the package itself.
 # See the section below: [tools.setuptools.dynamic]
 dynamic = [
   "version", # version is loaded from the package
-  #"dependencies", # add if using requirements.txt
+  "dependencies", # add if using requirements.txt
 ]
 readme = "README.md"
 requires-python = ">=3.9" # test all higher Python versions
 # These are keywords
 classifiers = [
-  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
 ]
 license = "MIT" # https://choosealicense.com/
@@ -22,13 +26,13 @@ license = "MIT" # https://choosealicense.com/
 # use requirements.txt instead of pyproject.toml for dependencies
 # https://stackoverflow.com/a/73600610/9684872
 # ! uncomment also dependencies in the dynamic section above
-# [tool.setuptools.dynamic]
-# dependencies = {file = ["requirements.txt"]}
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
 
 
 [project.urls]
-"Bug Tracker" = "https://github.com/RasmussenLab/python_package/issues"
-"Homepage" = "https://github.com/RasmussenLab/python_package"
+"Bug Tracker" = "https://github.com/Multiomics-Analytics-Group/abaco/issues"
+"Homepage" = "https://github.com/Multiomics-Analytics-Group/abaco"
 
 [project.optional-dependencies]
 # Optional dependencies to locally build the documentation, also used for 
