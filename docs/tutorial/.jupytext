@@ -1,0 +1,2 @@
+# all notebooks in this directory are in the percent format
+formats = "ipynb,py:percent"
