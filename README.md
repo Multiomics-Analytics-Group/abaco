@@ -40,5 +40,15 @@
 Tutorials and documentation are available on [Read the Docs](https://abaco.readthedocs.io/) :notebook_with_decorative_cover::grinning:
 ## Contributing
 1. Clone the repository
-2. 
+2. Create a virtual env e.g.
+  ```bash
+  # create virtual env
+  python -m venv .venv
+
+  # activate venv
+  source .venv/bin/activate
+
+  # install dependencies
+  pip install -e .
+  ```
 ## License
