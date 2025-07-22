@@ -3,12 +3,12 @@
 
 name: Python application
 
-on:
-  push:
-  pull_request:
-    branches: ["main"]
-  schedule:
-    - cron: "0 2 * * 3"
+# on:
+#   push:
+#   pull_request:
+#     branches: ["main"]
+#   schedule:
+#     - cron: "0 2 * * 3"
 
 permissions:
   contents: read
