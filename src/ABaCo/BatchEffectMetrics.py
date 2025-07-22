@@ -12,7 +12,7 @@ from sklearn.cluster import KMeans
 from scipy.spatial.distance import pdist, squareform
 from skbio.stats.distance import DistanceMatrix, permanova
 
-from src.ABaCo.BatchEffectDataLoader import DataTransform
+from ABaCo.BatchEffectDataLoader import DataTransform
 
 
 def kBET(data, batch_label="batch"):

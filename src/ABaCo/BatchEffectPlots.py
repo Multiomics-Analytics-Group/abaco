@@ -10,7 +10,7 @@ import plotly.graph_objects as go
 from plotly.validators.scatter.marker import SymbolValidator
 from plotly.subplots import make_subplots
 from clustergrammer2 import net, Network, CGM2
-from src.ABaCo.BatchEffectDataLoader import DataTransform
+from ABaCo.BatchEffectDataLoader import DataTransform
 
 
 def plotPCoA(
