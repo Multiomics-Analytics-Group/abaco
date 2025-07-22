@@ -94,8 +94,8 @@ intersphinx_mapping = {
 # https://github.com/executablebooks/MyST-NB/blob/master/docs/conf.py
 # html_title = ""
 html_theme = "sphinx_book_theme"
-html_logo = "assets/mango_fin.svg"
-html_favicon = "assets/mango_fin.svg"
+html_logo = "assets/abaco.svg"
+html_favicon = "assets/abaco.svg"
 html_theme_options = {
     "github_url": "https://github.com/Multiomics-Analytics-Group/abaco",
     "repository_url": "https://github.com/Multiomics-Analytics-Group/abaco",
