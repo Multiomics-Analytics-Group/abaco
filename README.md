@@ -39,16 +39,23 @@
 ## Documentation
 Tutorials and documentation are available on [Read the Docs](https://abaco.readthedocs.io/) :notebook_with_decorative_cover::grinning:
 ## Contributing
-1. Clone the repository
-2. Create a virtual env e.g.
+1. Fork the repository
+2. Clone the repository
+3. Create a virtual env e.g.
   ```bash
+  # navigate terminal to repo
+  cd <path-to-repo-root>
+
   # create virtual env
   python -m venv .venv
 
   # activate venv
   source .venv/bin/activate
-
-  # install dependencies
+  ```
+4. Install abaco in editing mode into the virtual env
+  ```bash
   pip install -e .
   ```
+5. Make changes
+6. Make a pull request
 ## License
