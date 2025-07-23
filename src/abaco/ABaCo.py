@@ -1857,43 +1857,63 @@ def log_normal_diag(x, mu, log_var, reduction=None, dim=None):
 
 
 def abaco_run(
-    dataloader,
-    n_batches,
-    n_bios,
-    device,
-    input_size,
-    new_pre_train=False,
-    seed=42,
-    d_z=16,
-    prior="VMM",
-    count=True,
-    pre_epochs=2000,
-    post_epochs=2000,
-    kl_cycle=True,
-    smooth_annealing=False,
+    dataloader: torch.utils.data.DataLoader,
+    n_batches: int,
+    n_bios: int,
+    device: torch.device,
+    input_size: int,
+    new_pre_train: bool = False,
+    seed: int = 42,
+    d_z: int = 16,
+    prior: str = "VMM",
+    count: bool = True,
+    pre_epochs:int = 2000,
+    post_epochs: int = 2000,
+    kl_cycle: bool = True,
+    smooth_annealing:bool = False,
     # VAE Model architecture
-    encoder_net=[1024, 512, 256],
-    decoder_net=[256, 512, 1024],
-    vae_act_func=nn.ReLU(),
+    encoder_net: list = [1024, 512, 256],
+    decoder_net: list = [256, 512, 1024],
+    vae_act_func = nn.ReLU(),
     # Discriminator architecture
-    disc_net=[256, 128, 64],
+    disc_net: list = [256, 128, 64],
     disc_act_func=nn.ReLU(),
-    disc_loss_type="CrossEntropy",
+    disc_loss_type: str = "CrossEntropy",
     # Model weights
-    w_elbo=1.0,
-    beta=20.0,
-    w_disc=1.0,
-    w_adv=1.0,
-    w_contra=10.0,
-    temp=0.1,
-    w_cycle=0.1,
+    w_elbo: float = 1.0,
+    beta: float = 20.0,
+    w_disc: float = 1.0,
+    w_adv: float = 1.0,
+    w_contra: float = 10.0,
+    temp: float = 0.1,
+    w_cycle: float = 0.1,
     # Learning rates
-    vae_pre_lr=1e-3,
-    vae_post_lr=1e-4,
-    disc_lr=1e-5,
-    adv_lr=1e-5,
+    vae_pre_lr: float = 1e-3,
+    vae_post_lr: float = 1e-4,
+    disc_lr: float = 1e-5,
+    adv_lr: float =1e-5,
 ):
-    """Full ABaCo run with default setting"""
+    """
+    Function to run the ABaCo model training.
+
+    Parameters
+    ----------
+    dataloader: torch.utils.data.DataLoader
+        Pytorch dataLoader for the training data.
+    n_batches: int
+        Number of batches in the dataset. For example, if samples were sequenced in
+        5 batches (e.g., 5 different dates) then batches = 5.
+    n_bios: int
+        Number of labels or (potential) clusters based on biological variance. For example, if 2 experimental
+        conditions (e.g., control and treatment) then n_bios = 2.
+    device: torch.device
+        Device to run the model on, e.g., "cuda" or "cpu".
+    input_size: int
+        Number of features in the input data, columns. For example, if the input is a gene expression matrix with 1000 genes,
+        then input_size = 1000.
+
+
+    """
     # Number of biological groups
     K = n_bios
     # Number of batches
