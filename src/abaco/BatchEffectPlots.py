@@ -7,10 +7,10 @@ from skbio.stats.ordination import pcoa
 from scipy.spatial.distance import pdist, squareform
 import plotly.express as px
 import plotly.graph_objects as go
-from plotly.validators.scatter.marker import SymbolValidator
+from plotly.validator_cache import ValidatorCache
 from plotly.subplots import make_subplots
 from clustergrammer2 import net, Network, CGM2
-from ABaCo.BatchEffectDataLoader import DataTransform
+from abaco.BatchEffectDataLoader import DataTransform
 
 
 def plotPCoA(
@@ -68,9 +68,8 @@ def plotPCoA(
     ]
     # df_pcoa = pd.concat([data[[sample_label, batch_label, experiment_label]], df_pcoa], axis=1)
     # Extracting available symbols to be used per experiment
-    raw_symbols = []
-    for i in range(2, len(SymbolValidator().values), 12):
-        raw_symbols.append(SymbolValidator().values[i])
+    SymbolValidator = ValidatorCache.get_validator("scatter.marker", "symbol")
+    raw_symbols = SymbolValidator.values[2::12]
 
     # Defining a set of colors to be used for batches
     raw_colors = [

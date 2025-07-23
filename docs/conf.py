@@ -15,10 +15,10 @@ from importlib import metadata
 
 # -- Project information -----------------------------------------------------
 
-project = "python_package"
-copyright = "2025, First Last"
-author = "First Last"
-PACKAGE_VERSION = metadata.version("python_package")
+project = "abaco"
+copyright = "2025, Edir Sebastián Vidal Castro"
+author = "Edir Sebastián Vidal Castro"
+PACKAGE_VERSION = metadata.version("abaco")
 version = PACKAGE_VERSION
 release = PACKAGE_VERSION
 
@@ -80,9 +80,10 @@ exclude_patterns = [
 # Intersphinx options
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
-    # "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
-    # "scikit-learn": ("https://scikit-learn.org/stable/", None),
-    # "matplotlib": ("https://matplotlib.org/stable/", None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
+    "scikit-learn": ("https://scikit-learn.org/stable/", None),
+    "torch": ("https://docs.pytorch.org/docs/stable/", None),
+    "transformers": ("https://huggingface.co/docs/transformers/main/en/", None),
 }
 
 # -- Options for HTML output -------------------------------------------------
@@ -93,11 +94,11 @@ intersphinx_mapping = {
 # https://github.com/executablebooks/MyST-NB/blob/master/docs/conf.py
 # html_title = ""
 html_theme = "sphinx_book_theme"
-# html_logo = "_static/logo-wide.svg"
-# html_favicon = "_static/logo-square.svg"
+html_logo = "assets/abaco.svg"
+html_favicon = "assets/abaco.svg"
 html_theme_options = {
-    "github_url": "https://github.com/RasmussenLab/python_package",
-    "repository_url": "https://github.com/RasmussenLab/python_package",
+    "github_url": "https://github.com/Multiomics-Analytics-Group/abaco",
+    "repository_url": "https://github.com/Multiomics-Analytics-Group/abaco",
     "repository_branch": "main",
     "home_page_in_toc": True,
     "path_to_docs": "docs",
@@ -129,7 +130,7 @@ if os.environ.get("READTHEDOCS") == "True":
     from pathlib import Path
 
     PROJECT_ROOT = Path(__file__).parent.parent
-    PACKAGE_ROOT = PROJECT_ROOT / "src" / "python_package"
+    PACKAGE_ROOT = PROJECT_ROOT / "src" / "abaco"
 
     def run_apidoc(_):
         from sphinx.ext import apidoc

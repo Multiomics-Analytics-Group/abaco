@@ -4,19 +4,70 @@ from scipy.stats import gmean
 from sklearn.preprocessing import StandardScaler
 import torch
 from torch.utils.data import DataLoader, TensorDataset
+from abaco.utils import assert_path
 
 
-def DataPreprocess(path, factors=["sample", "batch", "tissue"]):
-    df = pd.read_csv(path)
+def DataPreprocess(
+        path:str, 
+        factors:list=["sample", "batch", "tissue"],
+        delimiter:str=","
+    ):
+    """
+    Reads a CSV file and preprocesses the data by converting specified columns to categorical type.
+    Parameters
+    ----------
+    path : str
+        The path to the CSV file containing the data.
+    factors : list, optional
+        List of factor columns to convert to categorical type. Default is ["sample", "batch", "tissue"].
+    Returns
+    -------
+    pd.DataFrame
+        The preprocessed DataFrame with specified factor columns converted to categorical type.
+    """
+    # PRECONDITION CHECKS
+    assert_path(path)
+    if not isinstance(factors, list):
+        raise TypeError("Factors should be a list of column names.")
+    
+    # MAIN FUNCTION
+    # Read the CSV file into a DataFrame
+    df = pd.read_csv(path, sep=delimiter)
+    # check if factors are in the DataFrame
+    for factor in factors:
+        if factor not in df.columns:
+            raise ValueError(f"Factor '{factor}' not found in the DataFrame columns.")
+    # Convert specified columns to categorical type
     df[factors] = df[factors].astype("category")
 
     return df
 
 
 def DataTransform(
-    data, factors=["sample", "batch", "tissue"], transformation="CLR", count=False
-):
-
+    data, 
+    factors=["sample", "batch", "tissue"], 
+    transformation="CLR", 
+    count=False
+):  
+    """
+    Transforms the data based on the specified transformation method.
+    
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input data containing OTU counts and factors.
+    factors : list, optional
+        List of factor columns to retain in the transformed data.
+    transformation : str, optional
+        The transformation method to apply. Options are "CLR", "Sqrt", "ILR", "ALR".
+    count : bool, optional
+        If True, the data is treated as count data; otherwise, a small offset is added
+        to avoid log(0) issues.
+    Returns
+    -------
+    pd.DataFrame
+        The transformed data with the specified factors and transformed OTU counts.
+    """
     if transformation == "CLR":
         if count == False:
             # Select only OTUs columns and adding a small offset

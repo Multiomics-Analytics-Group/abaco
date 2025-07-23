@@ -1,4 +1,4 @@
-# Python Package Documentation
+# ABaCo Documentation
 
 ```{include} ../README.md
 :start-line: 0
@@ -13,7 +13,7 @@
 :caption: "Tutorials"
 :hidden: true
 
-tutorial/tutorial
+tutorial/tutorial-anaerobic-digestion
 ```
 
 ```{toctree}
@@ -21,17 +21,16 @@ tutorial/tutorial
 :caption: "Reference"
 :hidden: true
 
-reference/python_package
+reference/abaco
 ```
 
-```{toctree}
+<!-- ```{toctree}
 :maxdepth: 2
 :caption: "Technical notes"
 :hidden: true
 
 README
-developing
-```
+``` -->
 
 ## Indices and tables
 

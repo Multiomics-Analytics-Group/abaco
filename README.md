@@ -1,49 +1,62 @@
-# Example Python package
+# ABaCo
+![img](docs/assets/abaco.svg)
 
-All design principles are explained in the [developing.md](developing.md) file.
-The Python package template was created by Jakob Nybo Nissen and Henry Webel.
+<h1 align="center">ABaCo</h1>
+<p align="center"><em>Batch Effect Correction framework for metagenomic data</em></p>
 
-## How to use
+<p align="center">
+    <a href="https://pypi.org/project/abaco/">
+        <img src="https://img.shields.io/pypi/v/abaco?label=PyPI" alt="PyPI">
+    </a>
+    <a href="https://github.com/Multiomics-Analytics-Group/abaco/actions/workflows/cicd.yml">
+        <img src="https://github.com/Multiomics-Analytics-Group/abaco/actions/workflows/cicd.yml/badge.svg?branch=" alt="Python application">
+    </a>
+    <a href="https://abaco.readthedocs.io/en/latest/?badge=latest">
+        <img src="https://readthedocs.org/projects/abaco/badge/?version=latest" alt="Read the Docs">
+    </a>
+    <img src="https://img.shields.io/pypi/pyversions/abaco" alt="PyPI - Python Version">
+    <br>
+    <br>
+    <img src="https://img.shields.io/github/issues/Multiomics-Analytics-Group/abaco" alt="GitHub issues">
+    <img src="https://img.shields.io/github/license/Multiomics-Analytics-Group/abaco" alt="GitHub license">
+    <img src="https://img.shields.io/github/last-commit/Multiomics-Analytics-Group/abaco" alt="GitHub last commit">
+    <img src="https://img.shields.io/github/stars/Multiomics-Analytics-Group/abaco?style=social" alt="GitHub stars">
+</p>
 
-Can be used as GitHub template repository,
-see [GitHub documentation](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
 
-You will need to find and replace occurences of
+## Table of Contents :bookmark_tabs:
 
-- `python_package` -> `your_package_name`
-    - also the folder `src/python_package` 
-- `RasmussenLab` -> `GitHub_user_name` (or `organization`)
-with the name of your package and GitHub user name (or organization).
+- [Installation](#installation)
+- [Features](#features)
+- [Usage](#usage)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [License](#license)
 
-- look for `First Last` to see where to replace with your name
-- choose a license, see [GitHub documentation](https://docs.github.com/en/repositories/creating-and-managing-repositories/licensing-a-repository)
-  and [Creative Commons](https://creativecommons.org/chooser/).
-  Replace [`LICENSE`](LICENSE) file with the license you choose.
+## Installation 
+## Features
+## Usage
+## Documentation
+Tutorials and documentation are available on [Read the Docs](https://abaco.readthedocs.io/) :notebook_with_decorative_cover::grinning:
+## Contributing
+1. Fork the repository
+2. Clone the repository
+3. Create a virtual env e.g.
+  ```bash
+  # navigate terminal to repo
+  cd <path-to-repo-root>
 
-## Development environment
+  # create virtual env
+  python -m venv .venv
 
-Install package so that new code is picked up in a restared python interpreter:
-
-```
-pip install -e ".[dev]"
-```
-
-## Basic usage
-
-> works using this template
-
-```python
-from python_package import hello_world
-print (python_package.__version__)
-print(hello_world(4))
-```
-
-## Readthedocs
-
-The documentation can be build using readthedocs automatically. See
-[project on Readthedocs](https://readthedocs.org/projects/rasmussenlab-python-package/) 
-for the project based on this template. A new project needs
-to [be registered on ReadTheDocs](https://docs.readthedocs.com/platform/stable/intro/add-project.html).
-
-- make sure to enable build from PRs in the settings (advanded settings)
-- checkout configuration file: [`.readthedocs.yaml`](.readthedocs.yaml)
+  # activate venv
+  source .venv/bin/activate
+  ```
+4. Install abaco in editing mode into the virtual env
+  ```bash
+  pip install -e .
+  ```
+5. Make changes
+  > Note: we aimt o use numpy style python docstrings [sphinx example](https://www.sphinx-doc.org/en/master/usage/extensions/example_numpy.html#example-numpy)
+6. Make a pull request
+## License
