@@ -57,5 +57,6 @@ Tutorials and documentation are available on [Read the Docs](https://abaco.readt
   pip install -e .
   ```
 5. Make changes
+  > Note: we aimt o use numpy style python docstrings [sphinx example](https://www.sphinx-doc.org/en/master/usage/extensions/example_numpy.html#example-numpy)
 6. Make a pull request
 ## License
