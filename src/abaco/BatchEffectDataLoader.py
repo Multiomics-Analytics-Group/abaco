@@ -134,8 +134,44 @@ def DataReverseTransform(
     return df
 
 
-def one_hot_encoding(labels):
-    # Dictionary of batch labels
+def one_hot_encoding(
+        labels: pd.Series, 
+        dtype:torch.dtype = torch.float32
+    ) -> tuple:
+    """
+    Converts a series of labels into a one-hot encoded matrix.
+
+    Parameters
+    ----------
+    labels : pd.Series
+        The input labels to be one-hot encoded. 
+    dtype : torch.dtype, optional
+        The data type of the output tensor. Default is torch.float32.
+    
+    Returns
+    -------
+    tuple
+        A tuple containing:
+        - torch.Tensor: A one-hot encoded matrix where each row corresponds to a label.
+        - list: The categories (unique labels) encoded in matrix
+    
+    Example
+    -------
+    >>> import pandas as pd
+    >>> labels = pd.Series(['A', 'B', 'A', 'C'])
+    >>> one_hot_matrix, categories = one_hot_encoding(labels)
+    >>> print(one_hot_matrix)
+    tensor([[1, 0, 0],
+            [0, 1, 0],
+            [1, 0, 0],
+            [0, 0, 1]])
+    >>> print(categories)
+    ['A', 'B', 'C']
+    """
+    # Ensure labels are a pandas Series
+    if not isinstance(labels, pd.Series):
+        raise TypeError("Input labels must be a pandas Series.")
+    
     alphabet = labels.unique()
     label_to_int = {label: i for i, label in enumerate(alphabet)}
 
@@ -147,7 +183,7 @@ def one_hot_encoding(labels):
         if label in label_to_int:
             one_hot[i, label_to_int[label]] = 1
 
-    return torch.tensor(one_hot), alphabet.tolist()
+    return torch.tensor(one_hot, dtype=dtype), alphabet.tolist()
 
 
 def class_to_int(labels):
