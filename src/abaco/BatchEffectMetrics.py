@@ -16,7 +16,21 @@ from abaco.BatchEffectDataLoader import DataTransform
 
 
 def kBET(data, batch_label="batch"):
+    """
+    Compute the k-nearest neighbor batch effect test (kBET).
 
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    batch_label : str, optional
+        Column name for batch identifiers, by default 'batch'.
+
+    Returns
+    -------
+    float
+        Proportion of samples with p-value > 0.05 (null hypothesis not rejected).
+    """
     data_otus = data.select_dtypes(include="number")
     data_batch = data[batch_label]
 
@@ -54,7 +68,21 @@ def kBET(data, batch_label="batch"):
 
 
 def ASW(data, interest_label="tissue"):
+    """
+    Compute the average silhouette width (ASW) for a given label.
 
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    interest_label : str, optional
+        Column name for the label of interest, by default 'tissue'.
+
+    Returns
+    -------
+    float
+        Average silhouette score.
+    """
     average_silhouette = silhouette_score(
         data.select_dtypes(include="number"), data[interest_label]
     )
@@ -63,7 +91,23 @@ def ASW(data, interest_label="tissue"):
 
 
 def ARI(data, interest_label="tissue", n_clusters=None):
+    """
+    Compute the Adjusted Rand Index (ARI) between true labels and KMeans clusters.
 
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    interest_label : str, optional
+        Column name for the label of interest, by default 'tissue'.
+    n_clusters : int, optional
+        Number of clusters for KMeans. If None, uses the number of unique labels.
+
+    Returns
+    -------
+    float
+        Adjusted Rand Index score.
+    """
     data_otus = data.select_dtypes(include="number")  # OTUs
     data_bio = data[interest_label]  # Labels
 
@@ -82,8 +126,26 @@ def ARI(data, interest_label="tissue", n_clusters=None):
     return ari
 
 
-# NMI: Normalized Mutual Information
 def NMI(data, bio_label, n_cluster=None, average_method="arithmetic"):
+    """
+    Compute the Normalized Mutual Information (NMI) between true labels and KMeans clusters.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    bio_label : str
+        Column name for biological labels.
+    n_cluster : int, optional
+        Number of clusters for KMeans. If None, uses the number of unique labels.
+    average_method : str, optional
+        Method for averaging NMI, by default 'arithmetic'.
+
+    Returns
+    -------
+    float
+        Normalized Mutual Information score.
+    """
     taxa_matrix = data.select_dtypes(include="number")
     true_labels = data[bio_label]
 
@@ -101,16 +163,30 @@ def NMI(data, bio_label, n_cluster=None, average_method="arithmetic"):
 
 def all_metrics(data, bio_label, batch_label, n_cluster=None):
     """
-    Perform all metrics to address batch correction and biological conservation.
+    Compute all batch correction and biological conservation metrics.
 
     Batch correction:
-        kBET
-        ARI (batch)
-        ASW (batch)
+        kBET, ARI (batch), ASW (batch)
     Biological conservation:
-        NMI
-        ARI (bio)
-        ASW (bio)
+        NMI, ARI (bio), ASW (bio)
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    bio_label : str
+        Column name for biological labels.
+    batch_label : str
+        Column name for batch identifiers.
+    n_cluster : int, optional
+        Number of clusters for KMeans. If None, uses the number of unique labels.
+
+    Returns
+    -------
+    tuple of dict
+        (batch_metrics, bio_metrics)
+        batch_metrics: dict with keys 'kBET', 'ARI', 'ASW'
+        bio_metrics: dict with keys 'NMI', 'ARI', 'ASW'
     """
     # Batch correction metrics
     kbet = kBET(data, batch_label=batch_label)
@@ -139,19 +215,21 @@ def cLISI_raw(
     k: int = None,
 ):
     """
-    Computes non-normalized cell-type LISI.
+    Compute non-normalized cell-type LISI (cLISI).
 
-    Parameters:
-        data: [pd.DataFrame]
-            DataFrame containing normalized numeric type taxonomic groups, and any other column category as factor-type values.
-        bio_label: [str]
-            Name of the column in data with the categorical bio-type labels.
-        k: [int]
-            Optional, neighborhood size. By default it is the square root of the total number of samples.
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        DataFrame containing normalized numeric type taxonomic groups and categorical columns.
+    bio_label : str
+        Name of the column with the categorical bio-type labels.
+    k : int, optional
+        Neighborhood size. By default, uses the square root of the number of samples.
 
-    Returns:
-        cLISI: [float]
-            Mean raw cLISI across all samples. Goes from 1 to the number of unique bio-type labels.
+    Returns
+    -------
+    float
+        Mean raw cLISI across all samples (range: 1 to number of unique bio-type labels).
     """
 
     # Extract numerico matrix and labels
@@ -192,21 +270,23 @@ def cLISI_norm(
     n_bio=None,
 ):
     """
-    Computes ranked normalized cell-type LISI in [0, 1]
+    Compute normalized cell-type LISI (cLISI) in [0, 1].
 
-    Parameters:
-        data: [pd.DataFrame]
-            DataFrame containing normalized numeric type taxonomic groups, and any other column category as factor-type values.
-        bio_label: [str]
-            Name of the column in data with the categorical bio-type labels.
-        k: [int]
-            Optional, neighborhood size. By default it is the square root of the total number of samples.
-        n_bio: [int]
-            Optional, number of biological labels. If not provided the function will extract it from unique annotations from the data.
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        DataFrame containing normalized numeric type taxonomic groups and categorical columns.
+    bio_label : str
+        Name of the column with the categorical bio-type labels.
+    k : int, optional
+        Neighborhood size. By default, uses the square root of the number of samples.
+    n_bio : int, optional
+        Number of biological labels. If not provided, inferred from data.
 
-    Returns:
-        clisi_norm: [float]
-            Mean normalized cLISI across all samples. Goes from 0 to 1.
+    Returns
+    -------
+    float
+        Mean normalized cLISI across all samples (range: 0 to 1).
     """
     # Compute raw cLISI score
     raw = cLISI_raw(data=data, bio_label=bio_label, k=k)
@@ -228,21 +308,23 @@ def cLISI_full_rank(
     perplexities: list = None,
 ):
     """
-    Computes ranked normalized cell-type LISI within all possible perplexity range.
+    Compute normalized cLISI for a range of perplexities.
 
-    Parameters:
-        data: [pd.DataFrame]
-            DataFrame containing normalized numeric type taxonomic groups, and any other column category as factor-type values.
-        bio_label: [str]
-            Name of the column in data with the categorical bio-type labels.
-        n_bio: [int]
-            Optional, number of biological labels. If not provided the function will extract it from unique annotations from the data.
-        perplexities: [list]
-            Optional, possible perplexities (k) values. If not provided the funciton will use all possible k values.
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        DataFrame containing normalized numeric type taxonomic groups and categorical columns.
+    bio_label : str
+        Name of the column with the categorical bio-type labels.
+    n_bio : int, optional
+        Number of biological labels. If not provided, inferred from data.
+    perplexities : list of int, optional
+        List of neighborhood sizes (k) to use. If None, uses all possible k.
 
-    Returns:
-        clisi_table: [pd.DataFrame]
-            DataFrame with all cLISI values for all perplexities.
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with columns ['perplexity', 'cLISI'] for each k.
     """
     # Define perplexities to be used
     if perplexities is None:
@@ -262,19 +344,21 @@ def iLISI_raw(
     k: int = None,
 ):
     """
-    Computes non-normalized batch-mixing LISI.
+    Compute non-normalized batch-mixing LISI (iLISI).
 
-    Parameters:
-        data: [pd.DataFrame]
-            DataFrame containing normalized numeric type taxonomic groups, and any other column category as factor-type values.
-        batch_label: [str]
-            Name of the column in data with the categorical batch-type labels.
-        k: [int]
-            Optional, neighborhood size. By default it is the square root of the total number of samples.
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        DataFrame containing normalized numeric type taxonomic groups and categorical columns.
+    batch_label : str
+        Name of the column with the categorical batch-type labels.
+    k : int, optional
+        Neighborhood size. By default, uses the square root of the number of samples.
 
-    Returns:
-        iLISI: [float]
-            Mean raw iLISI across all samples. Goes from 1 to the number of unique batch-type labels.
+    Returns
+    -------
+    float
+        Mean raw iLISI across all samples (range: 1 to number of unique batch-type labels).
     """
 
     # Extract numerico matrix and labels
@@ -315,21 +399,23 @@ def iLISI_norm(
     n_batch: int = None,
 ):
     """
-    Computes ranked normalized cell-type LISI in [0, 1]
+    Compute normalized batch-mixing LISI (iLISI) in [0, 1].
 
-    Parameters:
-        data: [pd.DataFrame]
-            DataFrame containing normalized numeric type taxonomic groups, and any other column category as factor-type values.
-        batch_label: [str]
-            Name of the column in data with the categorical batch-type labels.
-        k: [int]
-            Optional, neighborhood size. By default it is the square root of the total number of samples.
-        n_batch: [int]
-            Optional, number of batch labels. If not provided the function will extract it from unique annotations from the data.
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        DataFrame containing normalized numeric type taxonomic groups and categorical columns.
+    batch_label : str
+        Name of the column with the categorical batch-type labels.
+    k : int, optional
+        Neighborhood size. By default, uses the square root of the number of samples.
+    n_batch : int, optional
+        Number of batch labels. If not provided, inferred from data.
 
-    Returns:
-        ilisi_norm: [float]
-            Mean normalized iLISI across all samples. Goes from 0 to 1.
+    Returns
+    -------
+    float
+        Mean normalized iLISI across all samples (range: 0 to 1).
     """
     # Compute raw iLISI score
     raw = iLISI_raw(data=data, batch_label=batch_label, k=k)
@@ -351,21 +437,23 @@ def iLISI_full_rank(
     perplexities: list = None,
 ):
     """
-    Computes ranked normalized batch-mixing LISI within all possible perplexity range.
+    Compute normalized iLISI for a range of perplexities.
 
-    Parameters:
-        data: [pd.DataFrame]
-            DataFrame containing normalized numeric type taxonomic groups, and any other column category as factor-type values.
-        batch_label: [str]
-            Name of the column in data with the categorical batch-type labels.
-        n_batch: [int]
-            Optional, number of batch labels. If not provided the function will extract it from unique annotations from the data.
-        perplexities: [list]
-            Optional, possible perplexities (k) values. If not provided the funciton will use all possible k values.
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        DataFrame containing normalized numeric type taxonomic groups and categorical columns.
+    batch_label : str
+        Name of the column with the categorical batch-type labels.
+    n_batch : int, optional
+        Number of batch labels. If not provided, inferred from data.
+    perplexities : list of int, optional
+        List of neighborhood sizes (k) to use. If None, uses all possible k.
 
-    Returns:
-        ilisi_table: [pd.DataFrame]
-            DataFrame with all iLISI values for all perplexities.
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with columns ['perplexity', 'iLISI'] for each k.
     """
     # Define perplexities to be used
     if perplexities is None:
@@ -381,6 +469,25 @@ def iLISI_full_rank(
 
 # Pairwise distance
 def pairwise_distance(data, sample_label, batch_label, bio_label):
+    """
+    Compute mean pairwise Euclidean distances within and between biological groups.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    sample_label : str
+        Column name for sample identifiers.
+    batch_label : str
+        Column name for batch identifiers.
+    bio_label : str
+        Column name for biological group identifiers.
+
+    Returns
+    -------
+    tuple of float
+        (mean_all_dists, mean_within_dists, mean_between_dists)
+    """
     # Step 1: normalized data to compute euclidean-like distance
     norm_data = DataTransform(
         data,
@@ -436,6 +543,25 @@ def pairwise_distance(data, sample_label, batch_label, bio_label):
 
 
 def pairwise_distance_std(data, sample_label, batch_label, bio_label):
+    """
+    Compute standard deviation of pairwise Euclidean distances within and between biological groups.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    sample_label : str
+        Column name for sample identifiers.
+    batch_label : str
+        Column name for batch identifiers.
+    bio_label : str
+        Column name for biological group identifiers.
+
+    Returns
+    -------
+    tuple of float
+        (std_all_dists, std_within_dists, std_between_dists)
+    """
     # Step 1: normalized data to compute euclidean-like distance
     norm_data = DataTransform(
         data,
@@ -491,6 +617,25 @@ def pairwise_distance_std(data, sample_label, batch_label, bio_label):
 
 
 def pairwise_distance_multi_run(data, sample_label, batch_label, bio_label):
+    """
+    Compute all pairwise Euclidean distances and return as a long-form DataFrame.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    sample_label : str
+        Column name for sample identifiers.
+    batch_label : str
+        Column name for batch identifiers.
+    bio_label : str
+        Column name for biological group identifiers.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Long-form DataFrame with columns ['pointA', 'pointB', 'distance', 'pointA_bio', 'pointB_bio'].
+    """
     # Step 1: normalized data to compute euclidean-like distance
     norm_data = DataTransform(
         data,
@@ -529,7 +674,29 @@ def pairwise_distance_multi_run(data, sample_label, batch_label, bio_label):
 
 
 def PERMANOVA(data, sample_label, batch_label, bio_label):
+    """
+    Perform PERMANOVA (permutational multivariate analysis of variance) using Bray-Curtis and Aitchison distances.
 
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    sample_label : str
+        Column name for sample identifiers.
+    batch_label : str
+        Column name for batch identifiers.
+    bio_label : str
+        Column name for biological group identifiers.
+
+    Returns
+    -------
+    tuple
+        (res_bc, res_ait)
+        res_bc : pandas.Series
+            PERMANOVA results for Bray-Curtis distance.
+        res_ait : pandas.Series
+            PERMANOVA results for Aitchison distance.
+    """
     samples = data[sample_label].values
     bios = data[bio_label].values
     counts = data.select_dtypes(include="number").values + 1e-6

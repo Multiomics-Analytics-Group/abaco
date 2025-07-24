@@ -9,10 +9,27 @@ from sklearn.linear_model import LogisticRegression, QuantileRegressor
 from sklearn.base import TransformerMixin, BaseEstimator
 
 
-# Batch Mean Centering (BMC)
+# Batch Mean Centering
 def correctBMC(data, sample_label, batch_label, exp_label):
     """
     This function, LITERALLY, substracts the mean of each batch (group) from each feature.
+    Perform Batch Mean Centering (BMC) correction.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    sample_label : str
+        Column name for sample identifiers.
+    batch_label : str
+        Column name for batch identifiers.
+    exp_label : str
+        Column name for experiment/tissue identifiers.
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with sample, experiment, batch, and batch mean centered features.
     """
     features = data.select_dtypes(include="number")
     batch_means = features.groupby(data[batch_label]).transform("mean")
@@ -27,6 +44,25 @@ def correctBMC(data, sample_label, batch_label, exp_label):
 def correctCombat(
     data, sample_label="sample", batch_label="batch", experiment_label="tissue"
 ):
+    """
+    Perform ComBat batch correction.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    sample_label : str, optional
+        Column name for sample identifiers, by default 'sample'.
+    batch_label : str, optional
+        Column name for batch identifiers, by default 'batch'.
+    experiment_label : str, optional
+        Column name for experiment/tissue identifiers, by default 'tissue'.
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with sample, batch, experiment, and ComBat-corrected features.
+    """
     num_data = data.select_dtypes(include="number")
     batch_data = [batch for batch in data[batch_label]]
     cov_data = [exp for exp in data[experiment_label]]
@@ -43,6 +79,25 @@ def correctCombat(
 def correctLimma_rBE(
     data, sample_label="sample", batch_label="batch", covariates_labels=None
 ):
+    """
+    Perform batch correction using Limma's removeBatchEffect approach.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    sample_label : str, optional
+        Column name for sample identifiers, by default 'sample'.
+    batch_label : str, optional
+        Column name for batch identifiers, by default 'batch'.
+    covariates_labels : str or list of str, optional
+        Additional covariate column(s) to include in the model.
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with original labels and batch-corrected numeric data.
+    """
     # Extract numeric variables from data
     num_data = data.select_dtypes(include="number")
 
@@ -118,6 +173,29 @@ def correctPLSDAbatch(
     ncomp_trt: int = 1,
     ncomp_batch: int = 1,
 ):
+    """
+    Perform PLSDA-batch correction.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    sample_label : str
+        Column name for sample identifiers.
+    exp_label : str
+        Column name for experiment/tissue identifiers.
+    batch_label : str
+        Column name for batch identifiers.
+    ncomp_trt : int, optional
+        Number of treatment components, by default 1.
+    ncomp_batch : int, optional
+        Number of batch components, by default 1.
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with sample, experiment, batch, and PLSDA-batch corrected features.
+    """
     y_sample = df[sample_label]
     y_trt = df[exp_label]
     y_batch = df[batch_label]
@@ -159,6 +237,18 @@ def correctPLSDAbatch(
 def deflate_mtx(X, t):
     """
     Deflate matrix X by component t: X - t (t^T t)^{-1} t^T X
+
+    Parameters
+    ----------
+    X : numpy.ndarray
+        Data matrix to be deflated.
+    t : numpy.ndarray
+        Component vector.
+
+    Returns
+    -------
+    numpy.ndarray
+        Deflated matrix.
     """
     # t: (n_samples,)
     denom = t.T @ t
@@ -169,6 +259,36 @@ def deflate_mtx(X, t):
 
 
 class PLSDA:
+    """
+    Partial Least Squares Discriminant Analysis (PLSDA) implementation.
+
+    Parameters
+    ----------
+    ncomp : int, optional
+        Number of components to extract, by default 1.
+    keepX : list of int, optional
+        Number of variables to keep for each component (for sparsity).
+    tol : float, optional
+        Convergence tolerance, by default 1e-6.
+    max_iter : int, optional
+        Maximum number of iterations, by default 500.
+
+    Attributes
+    ----------
+    t_ : numpy.ndarray
+        X scores.
+    u_ : numpy.ndarray
+        Y scores.
+    a_ : numpy.ndarray
+        X loadings.
+    b_ : numpy.ndarray
+        Y loadings.
+    iters_ : list
+        Number of iterations per component.
+    exp_var_ : list
+        Explained variance per component.
+    """
+
     def __init__(self, ncomp=1, keepX=None, tol=1e-6, max_iter=500):
         self.ncomp = ncomp
         self.keepX = keepX or []
@@ -261,6 +381,38 @@ def correctPLSDAbatch_R(
 ):
     """
     Python adaptation of PLSDA_batch from R. Returns corrected DataFrame.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    sample_label : str
+        Column name for sample identifiers.
+    exp_label : str
+        Column name for experiment/tissue identifiers.
+    batch_label : str
+        Column name for batch identifiers.
+    ncomp_trt : int, optional
+        Number of treatment components, by default 1.
+    ncomp_bat : int, optional
+        Number of batch components, by default 1.
+    keepX_trt : list of int, optional
+        Number of variables to keep for each treatment component.
+    keepX_bat : list of int, optional
+        Number of variables to keep for each batch component.
+    tol : float, optional
+        Convergence tolerance, by default 1e-6.
+    max_iter : int, optional
+        Maximum number of iterations, by default 500.
+    near_zero_var : bool, optional
+        Whether to filter near-zero variance features, by default True.
+    balance : bool, optional
+        Whether to balance design, by default True.
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with sample, experiment, batch, and corrected features.
     """
     y_sample = df[sample_label]
     y_trt = df[exp_label]
@@ -319,6 +471,36 @@ def correctPLSDAbatch_R(
 
 
 class ConQur(TransformerMixin, BaseEstimator):
+    """
+    Conditional Quantile Regression (ConQuR) batch correction transformer.
+
+    Parameters
+    ----------
+    batch_cols : list of str
+        List of batch column names.
+    covariate_cols : list of str
+        List of covariate column names.
+    reference_batch : dict
+        Dictionary specifying reference batch values for each batch column.
+    quantiles : tuple of float, optional
+        Quantiles to use for quantile regression, by default (0.05, 0.5, 0.95).
+    logistic_kwargs : dict, optional
+        Keyword arguments for LogisticRegression.
+    quantile_kwargs : dict, optional
+        Keyword arguments for QuantileRegressor.
+
+    Attributes
+    ----------
+    _logit_models : dict
+        Fitted logistic regression models for zero-mass.
+    _quantile_models : dict
+        Fitted quantile regression models for nonzero values.
+    _col_order : list
+        Order of columns used in the model.
+    _feature_cols : list
+        List of feature columns.
+    """
+
     def __init__(
         self,
         batch_cols,
@@ -508,7 +690,30 @@ def correctConQuR(
     quantile_kwargs={"alpha": 0.0},
 ):
     """
-    Conditional logistic quantile regression ConQuR for batch correction.
+    Conditional logistic quantile regression (ConQuR) for batch correction.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    batch_cols : list of str
+        List of batch column names.
+    covariate_cols : list of str
+        List of covariate column names.
+    reference_batch : dict, optional
+        Dictionary specifying reference batch values for each batch column.
+        If None, uses zeros for all batch columns.
+    quantiles : tuple of float, optional
+        Quantiles to use for quantile regression, by default (0.05, 0.25, 0.5, 0.75, 0.95).
+    logistic_kwargs : dict, optional
+        Keyword arguments for LogisticRegression.
+    quantile_kwargs : dict, optional
+        Keyword arguments for QuantileRegressor.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Batch-corrected DataFrame.
     """
     # Define reference batch
     if reference_batch is None:
@@ -541,6 +746,27 @@ def correctCombatSeq(
     condition_label,
     ref_batch=None,
 ):
+    """
+    Perform ComBat-seq batch correction for count data.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Input data containing count data and metadata.
+    sample_label : str
+        Column name for sample identifiers.
+    batch_label : str
+        Column name for batch identifiers.
+    condition_label : str
+        Column name for condition/experiment identifiers.
+    ref_batch : str or None, optional
+        Reference batch to use, by default None.
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with sample, batch, condition, and ComBat-seq corrected counts.
+    """
     count_data = data.select_dtypes(include="number")
     batch_data = [batch for batch in data[batch_label]]
     cov_data = [exp for exp in data[condition_label]]

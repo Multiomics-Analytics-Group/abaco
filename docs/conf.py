@@ -41,7 +41,7 @@ extensions = [
 
 #  https://myst-nb.readthedocs.io/en/latest/computation/execute.html
 nb_execution_mode = "auto"
-
+nb_execution_timeout = -1  # -1 means no timeout
 myst_enable_extensions = ["dollarmath", "amsmath"]
 
 # Plotly support through require javascript library
