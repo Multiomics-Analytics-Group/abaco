@@ -1911,6 +1911,73 @@ def abaco_run(
     input_size: int
         Number of features in the input data, columns. For example, if the input is a gene expression matrix with 1000 genes,
         then input_size = 1000.
+    new_pre_train: bool
+        If True, use the new pre-training method with adversarial training and contrastive loss.
+    seed: int
+        Random seed for reproducibility.
+    d_z: int
+        Dimensionality of the latent space. For example, if d_z = 16, then the latent space will have 16 dimensions.
+    prior: str
+        Prior distribution used. Baseline is "VMM" (VampPrior Mixture Model). Options are "VMM" 
+        "MoG" (Mixture of Gaussians), or "Normal".
+    count: bool
+        If True, the model will use a zero-inflated negative binomial (ZINB) decoder.
+        If False, it will use a zero-inflated Dirichlet (ZIDirichlet) decoder.
+    pre_epochs: int
+        Number of epochs for first phase of ABaCo: data reconstruction. Default is 2000.
+    post_epochs: int
+        Number of epochs for second phase of ABaCo: batch correction. Default is 2000.
+    kl_cycle: bool
+        If True, the model will use a KL divergence cycle loss during second phase of ABaCo (batch correction).
+        If False, cross loss 0 
+    smooth_annealing: bool
+        Slow batch masking during ABaCo second phase (batch correction) to avoid exploding gradients. 
+        Default is False.
+    encoder_net: list
+        List of integers defining the architecture of the encoder. Each integer is a layer size.
+        For example, [1024, 512, 256] means the encoder will have three layers with 1024, 512, and 256 neurons respectively.
+    decoder_net: list
+        List of integers defining the architecture of the decoder. Each integer is a layer size.
+        For example, [256, 512, 1024] means the decoder will have three layers with 256, 512, and 1024 neurons respectively.
+    vae_act_func: nn.Module
+        Activation function for the VAE encoder and decoder. Default is nn.ReLU().
+    disc_net: list
+        List of integers defining the architecture of the discriminator. Each integer is a layer size.
+        For example, [256, 128, 64] means the discriminator will have three layers with 256, 128, and 64 neurons respectively.
+    disc_act_func: nn.Module
+        Activation function for the discriminator. Default is nn.ReLU().
+    disc_loss_type: str
+        Type of loss function for the discriminator. Options are "CrossEntropy" or "Uniform".
+        Default is "CrossEntropy".
+    w_elbo: float
+        Weight of the ELBO loss in the pre-training phase. Default is 1.0
+    beta: float
+        KL-divergence coefficient: higher value yields bigger penalization from the prior distribution
+        during training. Default is 20.0.
+    w_disc: float
+        Weight of the discriminator loss in the pre-training phase. Default is 1.0
+    w_adv: float
+        Weight of the adversarial loss in the pre-training phase. Default is 1.0 
+    w_contra: float
+        Contrastive learning power. Higher value yields a higher separation of biological groups 
+        at the latent space. Sometimes higher is better.
+    w_cycle: float
+        Higher value leads to more unstability during ABaCo second phase. Default is 0.1.
+    temp: float
+        Temperature for the contrastive loss. Default is 0.1.
+    vae_pre_lr: float
+        Learning rate for first phase of ABaCo. Default is 1e-3.
+    vae_post_lr: float
+        Learning rate for second phase (batch correction). Default is 1e-4.
+    disc_lr: float
+        Learning rate for the batch discriminator. Default is 1e-5.
+    adv_lr: float
+        Adversarial learning rate: to the encoder, if batch effect is on latent space. Default is 1e-5.
+
+    Returns
+    -------
+    vae: 
+        Trained ABaCo model
 
 
     """
@@ -2101,7 +2168,7 @@ def abaco_run(
         )
 
     else:
-        raise ValueError(f"Prior distribution select isn't a valid option.")
+        raise ValueError(f"Prior distribution '{prior}' isn't a valid option: 'VMM', 'MoG' or 'Normal'")
 
     # Defining the batch discriminator architecture
     disc_net = [d_z + K] + disc_net  # first layer: conditional
