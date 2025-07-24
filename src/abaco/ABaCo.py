@@ -2261,11 +2261,11 @@ def abaco_run(
 
 def abaco_recon(
     model,
-    device,
-    data,
-    dataloader,
-    sample_label,
-    batch_label,
+    device: torch.device,
+    data: pd.DataFrame,
+    dataloader : torch.utils.data.DataLoader,
+    sample_label : str,
+    batch_label: str,
     bio_label,
     seed=42,
     det_encode=False,
@@ -2273,6 +2273,38 @@ def abaco_recon(
 ):
     """
     Function used to reconstruct data using trained ABaCo model.
+
+    Parameters
+    ----------
+    model: 
+        Trained ABaCo model.
+    device: torch.device
+        Device to run the model on, e.g., "cuda" or "cpu".
+    data: pd.DataFrame 
+        DataFrame containing the data to be reconstructed.
+    dataloader: torch.utils.data.DataLoader
+        Pytorch DataLoader for the data to be reconstructed.
+    sample_label: str
+        Column name in the DataFrame that contains unique ids for the observations/samples.
+    batch_label: str
+        Column name in the DataFrame that contains ids for 
+        the batch/factor groupings to be corrected by abaco. e.g. dates of sample analysis
+    bio_label: str
+        Column name in the DataFrame that contains biological groupings where there is the
+        biological/experimental factor variation for abaco to retain when correcting batch effect 
+        e.g., experimental condition 
+    seed: int, optional
+        Random seed for reproducibility. Default is 42.
+    det_encode: bool, optional
+        If True, use deterministic encoding. Default is False.
+    monte_carlo: int, optional
+        Number of Monte Carlo samples to use for reconstruction. Default is 100.
+        Setting at 1 is the same as just sampling from the final ZINB distribution obtained from the trained model
+    
+    Returns
+    -------
+    otu_corrected_pd: pd.DataFrame
+        DataFrame containing the reconstructed data with batch and biological labels.
     """
     # Set random seed
     if seed is not None:
