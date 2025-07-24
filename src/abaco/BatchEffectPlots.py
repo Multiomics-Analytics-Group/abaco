@@ -1,15 +1,13 @@
 import pandas as pd
 import numpy as np
-from scipy.stats import gmean
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from skbio.stats.ordination import pcoa
 from scipy.spatial.distance import pdist, squareform
-import plotly.express as px
 import plotly.graph_objects as go
 from plotly.validator_cache import ValidatorCache
 from plotly.subplots import make_subplots
-from clustergrammer2 import net, Network, CGM2
+from clustergrammer2 import Network, CGM2
 from abaco.BatchEffectDataLoader import DataTransform
 
 
@@ -21,7 +19,29 @@ def plotPCoA(
     experiment_label="tissue",
     mode="base",
 ):
+    """
+    Plot Principal Coordinates Analysis (PCoA) for batch effect visualization.
 
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    method : str, optional
+        Distance metric to use ('aitchison' or 'bray-curtis'), by default 'aitchison'.
+    sample_label : str, optional
+        Column name for sample identifiers, by default 'sample'.
+    batch_label : str, optional
+        Column name for batch identifiers, by default 'batch'.
+    experiment_label : str, optional
+        Column name for experiment/tissue identifiers, by default 'tissue'.
+    mode : str, optional
+        Plotting mode ('base' for batch+experiment, 'single' for batch only), by default 'base'.
+
+    Returns
+    -------
+    None
+        Displays a Plotly figure.
+    """
     if method == "aitchison":
         # CLR transform
         df = DataTransform(
@@ -42,7 +62,6 @@ def plotPCoA(
         distances = squareform(distances)
 
     elif method == "bray-curtis":
-
         # Extract numeric data (e.g., OTU count data).
         df_otu = data.select_dtypes(include="number")
         # Convert each sample's counts to relative abundances (row sums are normalized to 1)
@@ -205,6 +224,25 @@ def plotPCoA(
 def plotPCA(
     data, sample_label="sample", batch_label="batch", experiment_label="tissue"
 ):
+    """
+    Plot Principal Component Analysis (PCA) for batch effect visualization.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    sample_label : str, optional
+        Column name for sample identifiers, by default 'sample'.
+    batch_label : str, optional
+        Column name for batch identifiers, by default 'batch'.
+    experiment_label : str, optional
+        Column name for experiment/tissue identifiers, by default 'tissue'.
+
+    Returns
+    -------
+    None
+        Displays a Plotly figure.
+    """
     # Realize the PCA
     pca = PCA(n_components=2)
     principal_components = pca.fit_transform(data.select_dtypes(include="number"))
@@ -220,9 +258,8 @@ def plotPCA(
     ]
 
     # Extracting available symbols to be used per experiment
-    raw_symbols = []
-    for i in range(2, len(SymbolValidator().values), 12):
-        raw_symbols.append(SymbolValidator().values[i])
+    SymbolValidator = ValidatorCache.get_validator("scatter.marker", "symbol")
+    raw_symbols = SymbolValidator.values[2::12]
 
     # Defining a set of colors to be used for batches
     raw_colors = [
@@ -333,6 +370,21 @@ def plotPCA(
 
 
 def plotOTUBox(data, batch_label="batch"):
+    """
+    Plot boxplots of OTU abundances grouped by batch.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    batch_label : str, optional
+        Column name for batch identifiers, by default 'batch'.
+
+    Returns
+    -------
+    None
+        Displays a Plotly figure with dropdown to select OTUs.
+    """
     # Extract OTUs columns names
     otu_cols = [col for col in data.columns if col.startswith("OTU")]
     batch_labels = data[batch_label].unique()
@@ -418,7 +470,25 @@ def plotOTUBox(data, batch_label="batch"):
 def plotRLE(
     data, sample_label="sample", batch_label="batch", experiment_label="tissue"
 ):
+    """
+    Plot Relative Log Expression (RLE) boxplots for each experiment and batch.
 
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    sample_label : str, optional
+        Column name for sample identifiers, by default 'sample'.
+    batch_label : str, optional
+        Column name for batch identifiers, by default 'batch'.
+    experiment_label : str, optional
+        Column name for experiment/tissue identifiers, by default 'tissue'.
+
+    Returns
+    -------
+    None
+        Displays a Plotly figure with dropdown to select experiments.
+    """
     # Extract OTUs column names
     otu_cols = [col for col in data.columns if col.startswith("OTU")]
 
@@ -462,7 +532,6 @@ def plotRLE(
     for exp in df_long[experiment_label].unique():
         # Add traces for each batch
         for batch in df_long[batch_label].unique():
-
             fig.add_trace(
                 go.Box(
                     x=df_long[
@@ -534,6 +603,25 @@ def plotRLE(
 def plotClusterHeatMap(
     data, batch_label="batch", experiment_label="tissue", sample_label="sample"
 ):
+    """
+    Plot a clustered heatmap of scaled OTU data with batch and experiment metadata.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Input data containing OTU counts and metadata.
+    batch_label : str, optional
+        Column name for batch identifiers, by default 'batch'.
+    experiment_label : str, optional
+        Column name for experiment/tissue identifiers, by default 'tissue'.
+    sample_label : str, optional
+        Column name for sample identifiers, by default 'sample'.
+
+    Returns
+    -------
+    clustergrammer2.CGM2Widget
+        Clustergrammer2 widget displaying the clustered heatmap.
+    """
     # Extracts numerical and categorical data of interest
     data_num = data.select_dtypes(include="number")
     data_num.index = [str(i) for i in data[sample_label]]
@@ -573,6 +661,33 @@ def plot_LISI_perplexity(
     title_c: str = "Biological conservation (cLISI)",
     title_i: str = "Batch mixing (iLISI)",
 ):
+    """
+    Plot cLISI and iLISI scores as a function of perplexity.
+
+    Parameters
+    ----------
+    df_c : pandas.DataFrame
+        DataFrame containing cLISI scores and perplexity values.
+    df_i : pandas.DataFrame
+        DataFrame containing iLISI scores and perplexity values.
+    n_samples : int
+        Number of samples in the dataset.
+    x_col : str, optional
+        Column name for perplexity values, by default 'perplexity'.
+    y_col_c : str, optional
+        Column name for cLISI scores, by default 'cLISI'.
+    y_col_i : str, optional
+        Column name for iLISI scores, by default 'iLISI'.
+    title_c : str, optional
+        Title for the cLISI subplot, by default 'Biological conservation (cLISI)'.
+    title_i : str, optional
+        Title for the iLISI subplot, by default 'Batch mixing (iLISI)'.
+
+    Returns
+    -------
+    plotly.graph_objs._figure.Figure
+        Plotly figure with cLISI and iLISI subplots.
+    """
     ideal_k = max(int(np.sqrt(n_samples)), 1)
 
     # x-axis limits
