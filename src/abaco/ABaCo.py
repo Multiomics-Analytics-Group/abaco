@@ -3448,6 +3448,51 @@ class metaABaCo(nn.Module):
         disc_net=[128, 64],
         disc_act_fun=nn.ReLU(),
     ):
+        """
+        Function to create the metaABaCo model.
+
+        Parameters
+        ----------
+        data: pd.DataFrame
+            Pre-processed DataFrame to correct. Only feature columns to correct should be of numerical data type.
+        n_bios: int
+            Number of labels or (potential) clusters based on biological variance. For example, if 2 experimental
+            conditions (e.g., control and treatment) then n_bios = 2.
+        bio_label: char
+            Column label where biological labels are contained in data.
+        n_batches: int
+            Number of batches in the dataset. For example, if samples were sequenced in
+            5 batches (e.g., 5 different dates) then batches = 5.
+        batch_label: char
+            Column label where batch labels are contained in data.
+        n_features: int
+            Number of features in the input data, columns. For example, if the input is a gene expression matrix with 1000 genes,
+            then input_size = 1000.
+        device: torch.device
+            Device to run the model on, e.g., "cuda" or "cpu".
+        prior: str
+            Prior distribution used. Baseline is "VMM" (VampPrior Mixture Model). Options are "VMM" and
+            "MoG" (Mixture of Gaussians).
+        pdist: str
+            Output distribution used. Baseline is "ZINB" (Zero-inflated Negative Binomial).
+        d_z: int
+            Dimensionality of the latent space. For example, if d_z = 16, then the latent space will have 16 dimensions.
+        epochs: list
+            Number of epochs for first, second and third phase of ABaCo. Default is [1000, 2000, 2000]
+        encoder_net: list
+            List of integers defining the architecture of the encoder. Each integer is a layer size.
+            For example, [1024, 512, 256] means the encoder will have three layers with 1024, 512, and 256 neurons respectively.
+        decoder_net: list
+            List of integers defining the architecture of the decoder. Each integer is a layer size.
+            For example, [256, 512, 1024] means the decoder will have three layers with 256, 512, and 1024 neurons respectively.
+        vae_act_func: nn.Module
+            Activation function for the VAE encoder and decoder. Default is nn.ReLU().
+        disc_net: list
+            List of integers defining the architecture of the discriminator. Each integer is a layer size.
+            For example, [256, 128, 64] means the discriminator will have three layers with 256, 128, and 64 neurons respectively.
+        disc_act_fun: nn.Module
+            Activation function for the discriminator. Default is nn.ReLU().
+        """
         super().__init__()
 
         # Define known model parameters
