@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.distributions as td
 import torch.utils.data
+from torch.utils.data import TensorDataset, DataLoader
 from torch.nn import functional as F
 from tqdm import tqdm
 from sklearn.decomposition import PCA
