@@ -3392,7 +3392,7 @@ class VAE(nn.Module):
         q_zx = self.encoder(z)
 
         # 2. Get the prior distribution
-        if isinstance(self.prior, MoGPrior):
+        if isinstance(self.prior, MoCPPrior):
             p_z = self.prior(k_ohe)  # select Gaussian component of the prior
         else:
             p_z = self.prior()  # sample from standard Gaussian prior
