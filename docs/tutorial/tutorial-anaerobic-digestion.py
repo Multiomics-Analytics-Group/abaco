@@ -92,7 +92,8 @@ print(f"Biological classes: {ohe_bio_classes}")
 
 # %%
 from abaco.BatchEffectPlots import plotPCoA
-
+import plotly.io as pio
+pio.renderers.default = "notebook_connected"
 # pcoa
 plotPCoA(
     data=df_ad, 
@@ -122,61 +123,41 @@ plotPCoA(
 # ---
 
 # %% [markdown]
-# ## Data Preparation for PyTorch
-#
-# **ABaCo** is implemented using the [Pytorch ecosystem](https://docs.pytorch.org/docs/stable/index.html). 
-#
-# Following the typical [workflow](https://docs.pytorch.org/tutorials/beginner/basics/quickstart_tutorial.html) we will use their [`torch.utils.data.DataLoader` class](https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader) to easily iterate over the dataset in batches. 
-
-# %%
-import torch
-from torch.utils.data import DataLoader, TensorDataset
-
-# Convert the features into a tensor
-features_tensor = torch.tensor(df_features, dtype=torch.float32)
-
-# Construct DataLoader
-dataloader = DataLoader(
-    TensorDataset(
-        features_tensor, # input features
-        ohe_batches, # one hot encoded batch information
-        ohe_bio, # one hot encoded biological information
-    ),
-    batch_size=100, # number of samples per batch, so one batch since 75 samples in AS
-)
-
-
-# %% [markdown]
-# Now the data is prepped and ready for `ABaCo` !
-#
-# ------
-
-# %% [markdown]
 # # Using `ABaCo`
 
 # %% [markdown]
 # ## Training the ABaCo model
 #
-# To train ABaCo on the prepared AD dataset, we use `abaco.ABaCo.abaco_run()` and pass the required parameters shown in the cell below. Thus, running abaco with the default optional parameters.
+# To train ABaCo on the prepared AD dataset, we create the `abaco.metaABaCo()` class and pass the required parameters shown in the cell below. Thus, running abaco with the default optional parameters.
 #
-# Usually, setup of the parameters is required, which are explained in brief in the documentation e.g. `help(abaco_run)`
+# Usually, setup of the parameters is required, which are explained in brief in the documentation e.g. `help(metaABaCo)`
 
-# %% tags=["hide-output"]
-from abaco.ABaCo import abaco_run
+# %%
+from abaco.ABaCo import metaABaCo
+import torch
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Run ABaCo
-abaco_model = abaco_run(
-    dataloader = dataloader,
-    n_batches = len(ohe_batch_classes),  # number of batches
-    n_bios = len(ohe_bio_classes),  # number of biological groups
-    input_size = df_features.shape[1],  # number of features
-    device = device, # use gpu if available else cpu
+# Create ABaCo model
+model = metaABaCo(
+    data=df_ad, # Pre-processed dataframe
+    n_bios=2, # Number of biological groups in the data
+    bio_label=bio_col, # Column where biological groups are labeled in the dataframe
+    n_batches=5, # Number of batch groups in the data
+    batch_label=batch_col, # Column where batch groups are labeled in the dataframe
+    n_features=567, # Number of features (taxonomic groups)
+    prior="MoG", # Prior distribution 
+    device=device, # Device
 )
 
-# %%
-help(abaco_run)
+# %% tags=["hide-output"]
+help(metaABaCo)
+
+# %% [markdown]
+# For training the model we can call the method `correct()` part of the `metaABaCo()` class with the default parameters.
+
+# %% tags=["hide-output"]
+model.correct(seed=42)
 
 # %% [markdown]
 # After training the abaco model we can use it to reconstruct the AD dataset without the batch variance while keeping the biological variance.
@@ -187,23 +168,11 @@ help(abaco_run)
 # ## ABaCo data reconstruction
 
 # %% [markdown]
-# To reconstruct the dataset we use `abaco.ABaCo.abaco_recon()`. The reconstruction can be done with or without (recommended) Monte Carlo reconstruction setup.
+# To reconstruct the dataset we use the method `reconstruct()` from the `metaABaCo()` class.
 
 # %%
-from abaco.ABaCo import abaco_recon
-
 # Reconstruct the dataset using the trained ABaCo model
-corrected_dataset = abaco_recon(
-    model=abaco_model,
-    device=device,
-    data=df_ad,
-    dataloader=dataloader,
-    sample_label=id_col,
-    batch_label=batch_col,
-    bio_label=bio_col,
-    seed=42,
-    monte_carlo=1, # without Monte Carlo reconstruction
-)
+corrected_dataset = model.reconstruct(seed=42)
 
 # Plot the PCoA of the reconstructed dataset
 plotPCoA(
