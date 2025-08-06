@@ -16,8 +16,8 @@ from importlib import metadata
 # -- Project information -----------------------------------------------------
 
 project = "abaco"
-copyright = "2025, Edir Sebastián Vidal Castro"
-author = "Edir Sebastián Vidal Castro"
+copyright = "2025, Edir Vidal and MoNA group"
+author = "Edir Vidal, Angel L.P., Henry Webel, Atieh Gharib, Juliana Assis, Sebastián Ayala-Ruano, Alberto Santos"
 PACKAGE_VERSION = metadata.version("abaco")
 version = PACKAGE_VERSION
 release = PACKAGE_VERSION
@@ -119,6 +119,10 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 # html_static_path = ["_static"]
 
+# html_js_files = [
+#     "require.min.js",
+#     "custom.js",
+# ]
 
 # -- Setup for sphinx-apidoc -------------------------------------------------
 

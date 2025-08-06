@@ -1,6 +1,14 @@
 # ref: https://setuptools.pypa.io/en/stable/userguide/pyproject_config.html
 [project]
-authors = [{ name = "Edir Sebastián Vidal Castro", email = "edirvidalcastro@gmail.com" }]
+authors = [
+    { name = "Edir Sebastián Vidal Castro", email = "edirvidalcastro@gmail.com" },
+    { name = "Angel L. P." },
+    { name = "Alberto Santos", email = "albsad@dtu.dk" },
+    { name = "Henry Webel" },
+    { name = "Atieh Gharib" },    
+    { name = "Juliana Assis" },
+    { name = "Sebastián Ayala-Ruano" }
+]
 description = "Batch Effect Correction framework for metagenomic data"
 name = "abaco"
 # This means: Load the version from the package itself.
@@ -45,6 +53,7 @@ docs = [
   "sphinx-new-tab-link!=0.2.2",
   "jupytext",
   "sphinx-copybutton",
+  "anndata"
 ]
 # local development options
 dev = [
