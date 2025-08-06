@@ -1,39 +1,33 @@
-# ABaCo Documentation
+# ABaCo Overview
 
 ```{include} ../README.md
-:start-line: 0
+:start-line: 1
 :relative-docs: docs
 :relative-images:
 ```
 
-<!-- hidden toc trees for sidebar -->
-
 ```{toctree}
-:maxdepth: 2
-:caption: "Tutorials"
-:hidden: true
+:maxdepth: 3
+:caption: "Getting started tutorials"
 
 tutorial/tutorial-anaerobic-digestion
+tutorial/demo-mgnify-mgys-1135
 ```
 
 ```{toctree}
-:maxdepth: 2
+:maxdepth: 4
 :caption: "Reference"
-:hidden: true
 
 reference/abaco
 ```
 
-<!-- ```{toctree}
-:maxdepth: 2
-:caption: "Technical notes"
-:hidden: true
+```{toctree}
+:maxdepth: 1
+:caption: "Indices and Tables"
 
-README
-``` -->
+genindex
+modindex
+search
+```
 
-## Indices and tables
-
-- [Index](genindex)
-- [Module Index](modindex)
-- [Search](search)
+---
