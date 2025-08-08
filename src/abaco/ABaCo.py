@@ -11,7 +11,7 @@ import pandas as pd
 from scipy.stats import gaussian_kde
 import matplotlib.pyplot as plt
 import math
-from abaco.BatchEffectDataLoader import class_to_int, one_hot_encoding
+from abaco.dataloader import class_to_int, one_hot_encoding
 import random
 import seaborn as sns
 
