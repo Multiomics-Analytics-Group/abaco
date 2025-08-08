@@ -248,20 +248,20 @@ help(metaABaCo)
 # %% [markdown]
 # ### Training the ABaCo model
 #
-# To train ABaCo on the prepared dataset, we then use method `abaco.metaABaCo.correct()`. 
+# To train ABaCo on the prepared dataset, we then use method `abaco.metaABaCo.fit()`. 
 
 # %% tags=["hide-output"]
 # Train the model
-model.correct(seed=42)
+model.fit(seed=42)
 
 # %% [markdown]
 # ### Reconstructing the dataset with ABaCO
 #
-# To reconstruct the dataset we use method `abaco.metaABaCo.reconstruct()` and save it as a new layer `abaco` in the annotated dataset. 
+# To reconstruct the dataset we use method `abaco.metaABaCo.correct()` and save it as a new layer `abaco` in the annotated dataset. 
 
 # %%
 # Reconstruct the dataset using the trained ABaCo model
-corrected_dataset = model.reconstruct(seed=42)
+corrected_dataset = model.correct(seed=42)
 # save back to adata
 adata.layers['abaco'] = corrected_dataset.set_index(id_col).drop(columns=[batch_col, bio_col]).values
 adata.write_h5ad("data/mgnify_MGYS00001135.h5ad")

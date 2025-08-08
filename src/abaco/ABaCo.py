@@ -4189,7 +4189,7 @@ class metaABaCo(nn.Module):
 
         progress_bar.close()
 
-    def correct(
+    def fit(
         self,
         smooth_annealing=True,
         cycle_reg=None,
@@ -4292,7 +4292,7 @@ class metaABaCo(nn.Module):
             w_cycle,
         )
 
-    def reconstruct(
+    def correct(
         self,
         seed=None,
         mask=True,
