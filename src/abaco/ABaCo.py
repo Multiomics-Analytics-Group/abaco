@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.distributions as td
 import torch.utils.data
-from torch.utils.data import TensorDataset, DataLoader
+from torch.utils.data import DataLoader, TensorDataset
 from torch.nn import functional as F
 from tqdm import tqdm
 from sklearn.decomposition import PCA
@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import math
 from abaco.BatchEffectDataLoader import class_to_int, one_hot_encoding
 import random
+import seaborn as sns
 
 # ---------- PRIOR CLASSES DEFINITIONS ---------- #
 
@@ -368,10 +369,10 @@ class MoGEncoder(nn.Module):
 # ---------- DECODER CLASSES DEFINITIONS ---------- #
 
 
-class NegativeBinomialDecoder(nn.Module):
+class NBDecoder(nn.Module):
     def __init__(self, decoder_net):
         """
-        Define a Negative Binomial decoder to obtain the parameters of the Negative Binomial distribution.
+        Define a Negative Binomial decoder to obtain the parameters of the ZINB distribution.
 
         Parameters:
             decoder_net: [torch.nn.Module]
@@ -386,20 +387,30 @@ class NegativeBinomialDecoder(nn.Module):
         """
         Computes the Negative Binomial distribution over the data space. What we are getting is the mean
         and the dispersion parameters, so it is needed a parameterization in order to get the NB
-        distribution parameters: total_count (dispersion) and probs (dispersion/(dispersion + mean))
+        distribution parameters: total_count (dispersion) and probs (dispersion/(dispersion + mean)).
 
         Parameters:
             z: [torch.Tensor]
         """
         mu, theta = torch.chunk(self.decoder_net(z), 2, dim=-1)
-        # Ensure mean and dispersion are positive numbers
+        # Ensure mean and dispersion are positive numbers and pi is in range [0,1]
+
         mu = F.softplus(mu)
-        theta = F.softplus(theta)
+        theta = F.softplus(theta) + 1e-4
+
         # Parameterization into NB parameters
         p = theta / (theta + mu)
+
         r = theta
 
-        return td.Independent(td.NegativeBinomial(total_count=r, probs=p), 1)
+        # Clamp values to avoid huge / small probabilities
+        p = torch.clamp(p, min=1e-5, max=1 - 1e-5)
+
+        # Create Negative Binomial component
+        nb = td.NegativeBinomial(total_count=r, probs=p)
+        # nb = td.Independent(nb, 1)
+
+        return td.Independent(nb, 1)
 
 
 class ZINBDecoder(nn.Module):
@@ -485,65 +496,79 @@ class ZINBDecoder(nn.Module):
         return samples.mean(dim=0).floor().int()
 
 
-class DirichletDecoder(nn.Module):
-    def __init__(self, decoder_net):
+class DMDecoder(nn.Module):
+    def __init__(self, decoder_net, total_count, eps=1e-8):
         """
-        Define a Dirichlet decoder to obtain relative abundance values of the Dirichlet distribution.
+        Define a Dirichlet-Multinomial decoder to obtain the parameters of the distribution.
+
+        Parameters:
+            decoder_net: torch.nn.Module
+                The decoder network, takes a tensor of dimension (batch, d_z) and outputs
+                a tensor of dimension (batch, features), where d_z is the dimension of the
+                latent space.
+            total_count: int
+                Total number of reads (or organisms) per sample. In practice, it is just x_i.sum(),
+                where x_i is the sample i from the dataset.
+            eps: float
+                Small offset to avoid log(0) in probability computation.
+        """
+        super().__init__()
+        self.decoder_net = decoder_net
+        self.total_count = total_count
+        self.eps = eps
+
+    def forward(self, z):
+        """
+        Computes the Dirichlet-Multinomial distribution over the data space. We are obtaining the concentration parameter
+        of the distribution, hence the decoder output would have shape (batch, features).
+
+        Parameters:
+            z: torch.Tensor
+        """
+        conc_logits = self.decoder_net(z)
+        concentration = F.softplus(conc_logits) + self.eps
+
+        dm = DirichletMultinomial(
+            total_count=self.total_count, concentration=concentration
+        )
+
+        return td.Independent(dm, 1)
+
+
+class ZIDMDecoder(nn.Module):
+    def __init__(self, decoder_net, total_count, eps=1e-8):
+        """
+        Define a Zero-inflated Dirichlet-Multinomial decoder to obtain the parameters of the distribution.
 
         Parameters:
             decoder_net: [torch.nn.Module]
                 The decoder network, takes a tensor of dimension (batch, d_z) and outputs
                 a tensor of dimension (batch, features), where d_z is the dimension of the
                 latent space.
+            total_count: int
+                Total number of reads (or organisms) per sample. In practice, it is just x_i.sum(),
+                where x_i is the sample i from the dataset.
+            eps: float
+                Small offset to avoid log(0) in probability computation.
+
         """
         super().__init__()
         self.decoder_net = decoder_net
+        self.total_count = total_count
+        self.eps = eps
 
     def forward(self, z):
-        """
-        Computes the Dirichlet distribution over the data space. What we are getting is the concentration parameter
-        that is going to be the input for the td.Dirichlet distribution function.
+        conc_logits, pi_logits = torch.chunk(self.decoder_net(z), 2, dim=-1)
 
-        Parameters:
-            z: [torch.Tensor]
-        """
-        concentration = self.decoder_net(z)
-        # For stability, value is required to be positive and greater than 0
-        concentration = F.softplus(concentration + 1e-4)
-        dirichlet_dist = td.Dirichlet(concentration)
-        return td.Independent(dirichlet_dist, 1)
-
-
-class ZIDirichletDecoder(nn.Module):
-    def __init__(self, decoder_net):
-        """
-        Define a Zero-Inflated Dirichlet decoder to obtain relative abundance values of the ZIDirichlet distribution.
-
-        Parameters:
-            decoder_net: [torch.nn.Module]
-                The decoder network, takes a tensor of dimension (batch, d_z) and outputs
-                a tensor of dimension (batch, 2*features), where d_z is the dimension of the
-                latent space.
-        """
-        super().__init__()
-        self.decoder_net = decoder_net
-
-    def forward(self, z):
-        """
-        Computes the Zero-Inflated Dirichlet distribution over the data space. What we are getting is the concentration
-        parameter that is going to be the input for the ZIDirichlet distribution function.
-
-        Parameters:
-            z: [torch.Tensor]
-        """
-        concentration, pi_logits = torch.chunk(self.decoder_net(z), 2, dim=-1)
-
-        concentration = F.softplus(concentration) + 1e-4
+        concentration = F.softplus(conc_logits) + self.eps
+        dm = DirichletMultinomial(
+            total_count=self.total_count, concentration=concentration
+        )
 
         pi = torch.sigmoid(pi_logits)
+        zidm = ZIDM(dm=dm, pi=pi, eps=self.eps)
 
-        dirichlet_dist = td.Dirichlet(concentration)
-        return td.Independent(ZIDirichlet(pi, dirichlet_dist), 1)
+        return td.Independent(zidm, 1)
 
 
 # ---------- DISTRIBUTIONS CLASSES DEFINITIONS ---------- #
@@ -620,63 +645,156 @@ def kl_zinb_zinb(p, q):
     return kl
 
 
-class ZIDirichlet(td.Distribution):
+class DirichletMultinomial(td.Distribution):
     """
-    A Zero-inflated Dirichlet distribution.
+    Dirichlet-Multinomial distribution, defined by:
+        p ~ Dirichlet(alpha)
+        x | p ~ Multinomial(total_count, p)
     """
 
     arg_constraints = {
-        "zero_prob": td.constraints.unit_interval,
+        "total_count": td.constraints.nonnegative_integer,
+        "concentration": td.constraints.positive,
     }
-    support = td.constraints.simplex
+    support = td.constraints.nonnegative_integer
     has_rsample = False
 
-    def __init__(self, zero_prob, dirichlet, validate_args=None):
-        self.zero_prob = zero_prob
-        self.dirichlet = dirichlet
-        batch_shape = dirichlet.batch_shape
-        super().__init__(batch_shape=batch_shape, validate_args=validate_args)
+    def __init__(
+        self, total_count: int, concentration: torch.Tensor, validate_args=None
+    ):
+        """
+        Parameters:
+            total_count: scalar int for the Multinomial total counts N
+            concentration: tensor of shape (..., num_categories) for Dirichlet alphas
+        """
+        self.total_count = total_count
+        self.concentration = concentration
+        batch_shape = concentration.shape[:-1]
+        event_shape = concentration.shape[-1:]
+        super().__init__(
+            batch_shape=batch_shape,
+            event_shape=event_shape,
+            validate_args=validate_args,
+        )
 
-    def log_prob(self, x):
+    def log_prob(self, x: torch.Tensor):
         """
         Defines the log_prob() function inherent from torch.distributions.Distribution.
 
         Parameters:
-            x: [torch.Tensor]
+            x: torch.Tensor
         """
-        # Sanity check, if all elements in the last dimension are zero
-        is_zero = (x == 0).all(dim=-1)
+        # if self._validate_args:
+        #     total = x.sum(dim=-1)
+        #     if not torch.all(total == self.total_count):
+        #         raise ValueError("DirichletMultinomial counts must sum to total_count")
 
-        # Compute Dirichlet log probability for all sampels
-        dirichlet_log_prob = self.dirichlet.log_prob(x)
-        print(dirichlet_log_prob)
+        alpha = self.concentration
+        N = self.total_count
 
-        log_prob_zero = torch.log(self.zero_prob + 1e-8)
-        log_prob_nonzero = torch.log(1 - self.zero_prob + 1e-8) + dirichlet_log_prob
+        term1 = torch.lgamma(
+            torch.tensor(N + 1, dtype=torch.float, device=x.device)
+        ) - torch.lgamma(x + 1).sum(dim=-1)
 
-        return torch.where(is_zero, log_prob_zero, log_prob_nonzero)
+        sum_alpha = alpha.sum(dim=-1)
+        term2 = torch.lgamma(sum_alpha) - torch.lgamma(N + sum_alpha)
+
+        term3 = torch.lgamma(x + alpha).sum(dim=-1) - torch.lgamma(alpha).sum(dim=-1)
+
+        return term1 + term2 + term3
 
     def sample(self, sample_shape=torch.Size()):
+        """
+        Defines the sample() function, which is used to sample data points using the distribution parameters.
+        """
         shape = self._extended_shape(sample_shape)
-        zero_inflated = torch.bernoulli(self.zero_prob.expand(shape))
+        p = td.Dirichlet(self.concentration).sample(sample_shape)
 
-        dirichlet_sample = self.dirichlet.sample(sample_shape)
+        batch_dims = p.shape[:-1]
+        C = p.size(-1)
 
-        return torch.where(
-            zero_inflated.bool(), torch.zeros_like(dirichlet_sample), dirichlet_sample
+        # flatten batch dims
+        p_flat = p.reshape(-1, C)
+
+        # total_count per flat sample
+        tc = self.total_count
+
+        if isinstance(tc, torch.Tensor):
+            tc_flat = tc.reshape(-1)
+
+        else:
+            tc_flat = None
+
+        counts = []
+        for i, probs in enumerate(p_flat):
+            n = int(tc_flat[i]) if tc_flat is not None else self.total_count
+            idx = torch.multinomial(probs, n, replacement=True)
+            counts.append(torch.bincount(idx, minlength=C))
+
+        x = torch.stack(counts, dim=0)
+
+        return x.reshape(*batch_dims, C)
+
+
+class ZIDM(td.Distribution):
+    """
+    Zero-inflated Dirichlet-Multinomial (ZIDM) distribution.
+    Mixture of structural zeros per-category with a Dirichlet-Multinomial core.
+    """
+
+    arg_constraints = {}
+    support = td.constraints.nonnegative_integer
+    has_rsample = False
+
+    def __init__(
+        self,
+        dm: DirichletMultinomial,
+        pi: torch.Tensor,
+        eps: float = 1e-8,
+        validate_args=None,
+    ):
+        """
+        Parameters:
+            dm: DirichletMultinomial instance of the distribution
+            pi: tensor of shape (..., num_categories), zero-inflation probability per category
+            eps: small value to ensure non-zero concentration for masked-out categories
+        """
+        self.dm = dm
+        self.pi = pi
+        self.eps = eps
+        batch_shape = dm.batch_shape
+        event_shape = dm.event_shape
+        super().__init__(
+            batch_shape=batch_shape,
+            event_shape=event_shape,
+            validate_args=validate_args,
         )
 
+    def log_prob(self, x: torch.Tensor):
+        """
+        Defines the log_prob() function inherent from torch.distributions.Distribution.
 
-@td.kl.register_kl(ZIDirichlet, ZIDirichlet)
-def kl_zidirichlet_zidirichlet(p, q):
-    # Monte Carlo sampling from p
-    num_samples = 5000
-    samples = p.sample((num_samples,))
-    log_p = p.log_prob(samples)
-    log_q = q.log_prob(samples)
+        Parameters:
+            x: torch.Tensor
+        """
+        mask_nonzero = (x > 0).float()
+        term_pi = torch.log((1 - self.pi) + self.eps) * mask_nonzero
+        log_dm = self.dm.log_prob(x)
 
-    kl = (log_p - log_q).mean(dim=0)
-    return kl
+        return term_pi.sum(dim=-1) + log_dm
+
+    def sample(self, sample_shape=torch.Size()):
+        """
+        Defines the sample() function, which is used to sample data points using the distribution parameters.
+        """
+        shape = self._extended_shape(sample_shape)
+        zero_mask = torch.bernoulli(self.pi.expand(shape))
+        alpha_adj = self.dm.concentration * (1 - zero_mask) + self.eps
+        dm_adj = DirichletMultinomial(
+            total_count=self.dm.total_count, concentration=alpha_adj
+        )
+        sample = dm_adj.sample()
+        return sample
 
 
 class MixtureOfGaussians(td.Distribution):
@@ -3243,6 +3361,141 @@ class MoCPPrior(nn.Module):
         return 1.0 / (min_kl + 1e-8)
 
 
+class VMMPrior(nn.Module):
+    def __init__(
+        self, d_z, n_features, n_comp, n_batch, encoder, multiplier=1.0, dataloader=None
+    ):
+        """
+        Define a VampPrior Mixture Model prior distribution.
+
+        Parameters:
+            d_z: [int]
+                Dimension of the latent space
+            n_u: [int]
+                Number of pseudo-inputs for the VMM distribution
+            multiplier: [float]
+                Parameter that controls sparsity of each Gaussian component
+        """
+        super().__init__()
+        self.d_z = d_z
+        self.n_features = n_features
+        self.n_comp = n_comp
+        self.n_batch = n_batch
+        self.encoder = encoder
+        self.dataloader = dataloader
+
+        if self.dataloader is not None:
+            self.u = self.sample_from_dataloader()
+        else:
+            self.u = nn.Parameter(
+                torch.cat(
+                    [
+                        torch.rand(n_comp, n_features) * multiplier,
+                        torch.zeros(n_comp, n_batch),
+                    ],
+                    dim=1,
+                )
+            )
+
+        self.var = nn.Parameter(torch.randn(n_comp, self.d_z))
+
+    def sample_from_dataloader(self):
+        all_data = []
+        bio_label = []
+        # Collect until we have at least K samples
+        for batch in self.dataloader:
+            x = batch[0]
+            z = batch[2]  # biological variability
+            all_data.append(x)
+            bio_label.append(z)
+            if len(all_data) * x.shape[0] >= self.n_comp:
+                break
+
+        all_data = torch.cat(all_data, dim=0)  # (N, D)
+        bio_label = torch.cat(bio_label, dim=0)  # (N, L)
+
+        # Find the unique labels
+        bio_dict = torch.unique(bio_label, dim=0)  # (G, L), G = #groups
+
+        # For each unique label, compute the mean of its members
+        selected_u = []
+        for label in bio_dict:
+            # mask of samples matching this label
+            mask = (bio_label == label).all(dim=1)  # (N,)
+            group_data = all_data[mask]  # (n_i, D)
+            group_mean = group_data.mean(dim=0)  # (D,)
+            selected_u.append(group_mean)
+
+        selected_u = torch.stack(selected_u, dim=0)  # (G, D)
+
+        # Zero pad for batch dim
+        zeros_pad = torch.zeros(self.n_comp, self.n_batch, device=selected_u.device)
+        selected_u = torch.cat([selected_u, zeros_pad], dim=1)
+
+        # Return as a learnable parameter
+        return nn.Parameter(selected_u.clone().detach().requires_grad_(True))
+
+    def forward(self, k_ohe):
+        """
+        Return prior distribution, allowing for the computation of the KL-divergence by calling self.prior().
+
+        Parameters:
+            k_ohe: [torch.tensor]
+                One-hot encoded tensor with the corresponding component the point belongs to.
+            b_ohe: [torch.tensor]
+                One-hot encoded tensor with the corresponding batch label, necessary to append at the Encoder input.
+            encoder: [nn.Module]
+                Encoder used for getting the centroid of the cluster by encoding the pseudo-input.
+
+        Returns:
+            prior: [torch.distributions.Distribution]
+        """
+        # Encode the pseudo-input
+        u_k = k_ohe @ self.u
+        _, mu_k, _ = self.encoder.encode(u_k)
+        mu_k = mu_k[torch.arange(mu_k.size(0)), k_ohe.argmax(dim=1), :]  # (batch, d_z)
+
+        # Get parameters for each MoG component
+        std_k = k_ohe @ torch.sqrt(torch.nn.functional.softplus(self.var) + 1e-8)
+
+        return td.Independent(td.Normal(loc=mu_k, scale=std_k), 1)
+
+    def cluster_loss(self):
+        """
+        Compute the clustering loss for the MoG prior. This loss encourages the components to be well separated
+        by maximizing the pairwise KL divergence between the Gaussian components.
+        """
+
+        # Compute softplus to ensure positive variances
+        stds = torch.sqrt(torch.nn.functional.softplus(self.var) + 1e-8)
+        _, mus, _ = self.encoder.encode(self.u)
+        n = self.n_comp
+
+        # Compute pairwise KL divergences between all components
+        kl_matrix = torch.zeros((n, n), device=mus.device)
+        for i in range(n):
+            for j in range(n):
+                if i != j:
+                    mu1, mu2 = mus[i], mus[j]
+                    std1, std2 = stds[i], stds[j]
+                    var1, var2 = std1**2, std2**2
+
+                    # KL(N1 || N2) for diagonal Gaussians
+                    kl = 0.5 * (
+                        torch.sum(var1 / var2)
+                        + torch.sum((mu2 - mu1) ** 2 / var2)
+                        - self.d_z
+                        + torch.sum(torch.log(var2))
+                        - torch.sum(torch.log(var1))
+                    )
+                    kl_matrix[i, j] = kl
+
+        # Take the minimum KL divergence between any two components
+        min_kl = kl_matrix[kl_matrix > 0].min()
+        # Loss is inverse of min KL (maximize separation)
+        return 1.0 / (min_kl + 1e-8)
+
+
 class MoCPEncoder(nn.Module):
     def __init__(self, encoder_net, n_comp):
         """
@@ -3524,6 +3777,9 @@ class metaABaCo(nn.Module):
             batch_size=len(self.data),
         )
 
+        for x, y, z in self.dataloader:  # just one iteration
+            self.total_count = x.sum(dim=1).to(self.device)
+
         # Define Encoder
         encoder_net = [n_features + n_batches] + encoder_net  # first layer: conditional
         encoder_net.append(
@@ -3539,9 +3795,20 @@ class metaABaCo(nn.Module):
             self.encoder = MoCPEncoder(nn.Sequential(*modules), n_bios)
             self.prior = MoCPPrior(d_z, n_bios)
 
+        elif prior == "VMM":
+            self.encoder = MoGEncoder(nn.Sequential(*modules), n_bios)
+            self.prior = VMMPrior(
+                d_z,
+                n_features,
+                n_bios,
+                n_batches,
+                self.encoder,
+                dataloader=self.dataloader,
+            )
+
         else:
             raise NotImplementedError(
-                "Only 'MoG' prior is currently implemented in metaAbaco."
+                "Only 'MoG' and 'VMM' prior are currently implemented in metaAbaco."
             )
 
         # Define Decoder
@@ -3552,9 +3819,24 @@ class metaABaCo(nn.Module):
                 3 * n_features
             )  # last layer: ZINB distribution parameters (n_features * (dispersion + dropout + mean))
 
+        elif pdist == "NB":
+            decoder_net.append(
+                2 * n_features
+            )  # last layer: ZINB distribution parameters (n_features * (dispersion + mean))
+
+        elif pdist == "DM":
+            decoder_net.append(
+                n_features
+            )  # last layer: Dirichlet-Multinomial distribution parameters (n_feature * concentration)
+
+        elif pdist == "ZIDM":
+            decoder_net.append(
+                2 * n_features
+            )  # last layer: ZIDM distribution parameters (n_features * (concentration + dropout))
+
         else:
             raise NotImplementedError(
-                "Only 'ZINB' decoder is currently implemented in metaAbaco."
+                "Only 'ZINB', 'DM' and 'ZIDM' decoders are currently implemented in metaAbaco."
             )
 
         modules = []
@@ -3566,9 +3848,18 @@ class metaABaCo(nn.Module):
         if pdist == "ZINB":
             self.decoder = ZINBDecoder(nn.Sequential(*modules))
 
+        elif pdist == "NB":
+            self.decoder = NBDecoder(nn.Sequential(*modules))
+
+        elif pdist == "DM":
+            self.decoder = DMDecoder(nn.Sequential(*modules), self.total_count)
+
+        elif pdist == "ZIDM":
+            self.decoder = ZIDMDecoder(nn.Sequential(*modules), self.total_count)
+
         else:
             raise NotImplementedError(
-                "Only 'ZINB' decoder is currently implemented in metaAbaco."
+                "Only 'NB', 'ZINB', 'DM', and 'ZIDM' decoders are currently implemented in metaAbaco."
             )
 
         # Define the VAE
@@ -4004,6 +4295,7 @@ class metaABaCo(nn.Module):
     def reconstruct(
         self,
         seed=None,
+        mask=True,
     ):
         self.vae.eval()
 
@@ -4025,9 +4317,14 @@ class metaABaCo(nn.Module):
             # Encode and decode the input data along with the one-hot encoded batch label
             q_zx = self.vae.encoder(torch.cat([x, ohe_batch], dim=1))  # td.Distribution
             z = q_zx.rsample()  # latent points
-            p_xz = self.vae.decoder(
-                torch.cat([z, torch.zeros_like(ohe_batch.to(self.device))], dim=1)
-            )  # td.Distribution
+            if mask == True:
+                p_xz = self.vae.decoder(
+                    torch.cat([z, torch.zeros_like(ohe_batch.to(self.device))], dim=1)
+                )  # td.Distribution
+            else:
+                p_xz = self.vae.decoder(
+                    torch.cat([z, ohe_batch], dim=1)
+                )  # useful when there is no batch effect to correct
 
             # Sample from the output distribution
             x_recon = p_xz.sample()  # Reconstructed data
@@ -4050,3 +4347,45 @@ class metaABaCo(nn.Module):
         )
 
         return x_recon_data
+
+    def plot_pca_posterior(self, figsize=(14, 6), palette="tab10"):
+        """
+        Get the plot of the first 2 principal components of the posterior distribution.
+        """
+        self.vae.eval()
+        z_pca = []
+        for loader_data in iter(self.dataloader):
+            x = loader_data[0].to(self.device)
+            ohe_batch = loader_data[1].to(self.device).float()  # Batch label
+            ohe_bio = loader_data[2].to(self.device).float()  # Bio type label
+
+            l1 = ohe_batch.detach().cpu().numpy().argmax(axis=1)
+            l2 = ohe_bio.detach().cpu().numpy().argmax(axis=1)
+
+            coords = self.vae.pca_posterior(torch.cat([x, ohe_batch], dim=1))
+            z_pca.append(coords)
+
+        coords = np.vstack(coords)
+
+        fig, axes = plt.subplots(1, 2, figsize=figsize)
+
+        sns.scatterplot(
+            x=coords[:, 0],
+            y=coords[:, 1],
+            hue=l1,
+            palette=palette,
+            ax=axes[0],
+            legend="full",
+        )
+        axes[0].set_title("Posterior PCA colored by batch group")
+        sns.scatterplot(
+            x=coords[:, 0],
+            y=coords[:, 1],
+            hue=l2,
+            palette=palette,
+            ax=axes[1],
+            legend="full",
+        )
+        axes[1].set_title("Posterior PCA colored by biological group")
+        plt.tight_layout()
+        plt.show()
