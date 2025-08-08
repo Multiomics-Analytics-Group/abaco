@@ -51,7 +51,7 @@
 # `abaco` provides a `BatchEffectDataLoader.dataPreprocess()` function to help convert a plain text file (e.g, csv, tsv) into a compatible pd.DataFrame format, and a `onehotencoding()` function to encode categorical columns. 
 
 # %%
-from abaco.BatchEffectDataLoader import DataPreprocess, one_hot_encoding
+from abaco.dataloader import DataPreprocess, one_hot_encoding
 
 # Load AD count
 path_to_dataset = "data/dataset_ad.csv"
@@ -91,7 +91,7 @@ print(f"Biological classes: {ohe_bio_classes}")
 # `abaco` also provides plotting functions to easily explore the data. Here we use `BatchEffectPlots.plotPCoA()` to visualize the batch and biological effects on the data.
 
 # %%
-from abaco.BatchEffectPlots import plotPCoA
+from abaco.plots import plotPCoA
 import plotly.io as pio
 pio.renderers.default = "notebook_connected"
 # pcoa

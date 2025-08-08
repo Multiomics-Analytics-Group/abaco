@@ -86,10 +86,10 @@ df_all.info()
 #
 # - And taxa counts to be trained on. 
 #
-# We can use `abaco.BatchEffectPlots.plotPCoA()` to visualize any batch and biological effects based on the given categories. 
+# We can use `abaco.plots.plotPCoA()` to visualize any batch and biological effects based on the given categories. 
 
 # %%
-from abaco.BatchEffectPlots import plotPCoA
+from abaco.plots import plotPCoA
 import plotly.io as pio
 pio.renderers.default = "notebook_connected"
 
