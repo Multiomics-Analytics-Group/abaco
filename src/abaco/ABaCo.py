@@ -23,8 +23,9 @@ class NormalPrior(nn.Module):
         """
         Define a Gaussian Normal prior distribution with zero mean and unit variance (Standard distribution).
 
-        Parameters:
-            d_z: [int]
+        Parameters
+        ----------
+            d_z: int
                 Dimension of the latent space
         """
         super().__init__()
@@ -36,8 +37,9 @@ class NormalPrior(nn.Module):
         """
         Return prior distribution. This allows the computation of KL-divergence by calling self.prior() in the VAE class.
 
-        Returns:
-            prior: [torch.distributions.Distribution]
+        Returns
+        -------
+            prior: torch.distributions.Distribution
         """
         return td.Independent(td.Normal(loc=self.mu, scale=self.var), 1)
 
@@ -45,14 +47,15 @@ class NormalPrior(nn.Module):
 class MoGPrior(nn.Module):
     def __init__(self, d_z, n_comp, multiplier=1.0):
         """
-        Define a Mixture of Gaussian Normal prior distribution.
+        Define a Mixture of Gaussian Normal prior distribution with trainable mean and variance.
 
-        Parameters:
-            d_z: [int]
+        Parameters
+        ----------
+            d_z: int
                 Dimension of the latent space
-            n_comp: [int]
+            n_comp: int
                 Number of components for the MoG distribution
-            multiplier: [float]
+            multiplier: float
                 Parameter that controls sparsity of each Gaussian component
         """
         super().__init__()
@@ -67,47 +70,9 @@ class MoGPrior(nn.Module):
         """
         Return prior distribution, allowing for the computation of the KL-divergence by calling self.prior().
 
-        Returns:
-            prior: [torch.distributions.Distribution]
-        """
-        # Get parameters for each MoG component
-        means = self.mu
-        stds = torch.sqrt(torch.nn.functional.softplus(self.var) + 1e-8)
-        logits = self.pi
-
-        # Call MoG distribution
-        prior = MixtureOfGaussians(logits, means, stds)
-
-        return prior
-
-
-class VMMPrior(nn.Module):
-    def __init__(self, d_z, n_comp, mu, multiplier=1.0):
-        """
-        Define a Mixture of Gaussian Normal prior distribution.
-
-        Parameters:
-            d_z: [int]
-                Dimension of the latent space
-            n_comp: [int]
-                Number of components for the MoG distribution
-            multiplier: [float]
-                Parameter that controls sparsity of each Gaussian component
-        """
-        super().__init__()
-        self.d_z = d_z
-        self.n_comp = n_comp
-
-        self.mu = mu
-        self.var = nn.Parameter(torch.randn(n_comp, self.d_z))
-        self.pi = nn.Parameter(torch.zeros(n_comp))
-
-    def forward(self):
-        """
-        Return prior distribution, allowing for the computation of the KL-divergence by calling self.prior().
-
-        Returns:
-            prior: [torch.distributions.Distribution]
+        Returns
+        -------
+            prior: torch.distributions.Distribution
         """
         # Get parameters for each MoG component
         means = self.mu
@@ -128,16 +93,28 @@ class NormalEncoder(nn.Module):
         """
         Define a Gaussian Normal encoder to obtain the parameters of the Normal distribution.
 
-        Parameters:
-            encoder_net: [torch.nn.Module]
-                The encoder network, takes a tensor of dimension (batch, features) and
-                outputs a tensor of dimension (batch, 2*d_z), where d_z is the dimension of the
-                latent space.
+        Parameters
+        ----------
+            encoder_net: torch.nn.Module
+                The encoder network, takes a tensor of dimension (batch, features) and outputs a tensor of dimension (batch, 2*d_z), where d_z is the dimension of the latent space.
         """
         super().__init__()
         self.encoder_net = encoder_net
 
     def encode(self, x):
+        """
+        Given an input encodes it into the parameters of the Normal distribution (mean and variance) using self.encoder_net.
+
+        Parameters
+        ----------
+            x: torch.tensor
+                Tensor to be encoded
+
+        Returns
+        -------
+            mu, var: torch.tensor
+                Parameters of the Normal distribution (mean and variance respectively)
+        """
 
         mu, var = torch.chunk(
             self.encoder_net(x), 2, dim=-1
@@ -149,8 +126,15 @@ class NormalEncoder(nn.Module):
         """
         Computes the Gaussian Normal distribution over the latent space.
 
-        Parameters:
-            x: [torch.Tensor]
+        Parameters
+        ----------
+            x: torch.Tensor
+                Tensor to be encoded
+
+        Returns
+        -------
+            torch.distribution
+                Gaussian Normal distribution use to calculate the posterior distribution with .rsample()
         """
         mu, var = self.encode(x)
         std = torch.sqrt(torch.nn.functional.softplus(var) + 1e-8)
@@ -161,14 +145,36 @@ class NormalEncoder(nn.Module):
         """
         Computes the encoded point without stochastic component.
 
-        Parameters:
+        Parameters
+        ----------
             x: torch.Tensor
+                Tensor to be encoded
+
+        Returns
+        -------
+            mu: torch.Tensor
+                Gaussian Noraml mean of the encoded point
         """
         mu, _ = self.encode(x)
 
         return mu
 
     def monte_carlo_encode(self, x, K=100):
+        """
+        Computes a Monte Carlo simulation of the same point to approximate the true posterior distribution.
+
+        Parameters
+        ----------
+            x: torch.Tensor
+                Tensor to be encoded
+            K: int
+                Number of Monte Carlo iterations
+
+        Returns
+        -------
+            sample: torch.Tensor
+                Mean from all samples (i.e. expectation of the encoded point estimated through Monte Carlo simulations)
+        """
         mu, var = self.encode(x)
         std = torch.sqrt(torch.nn.functional.softplus(var) + 1e-8)
 
@@ -176,7 +182,9 @@ class NormalEncoder(nn.Module):
 
         samples = dist.sample(sample_shape=(K,))
 
-        return samples.mean(dim=0)
+        sample = samples.mean(dim=0)
+
+        return sample
 
 
 class MoGEncoder(nn.Module):
@@ -184,12 +192,11 @@ class MoGEncoder(nn.Module):
         """
         Define a Mixture of Gaussians encoder to obtain the parameters of the MoG distribution.
 
-        Parameters:
-            encoder_net: [torch.nn.Module]
-                The encoder network, takes a tensor of dimension (batch, features) and
-                outputs a tensor of dimension (batch, n_comp*(2*d_z + 1)), where d_z is the dimension
-                of the latent space, and n_comp the number of components of the MoG distribution.
-            n_comp: [int]
+        Parameters
+        ----------
+            encoder_net: torch.nn.Module
+                The encoder network, takes a tensor of dimension (batch, features) and outputs a tensor of dimension (batch, n_comp*(2*d_z + 1)), where d_z is the dimension of the latent space, and n_comp the number of components of the MoG distribution.
+            n_comp: int
                 Number of components for the MoG distribution.
         """
         super().__init__()
@@ -197,7 +204,19 @@ class MoGEncoder(nn.Module):
         self.encoder_net = encoder_net
 
     def encode(self, x):
+        """
+        Given an input encodes it into the parameters of the MoG distribution (mixing probabilities, means and standard deviations) using self.encoder_net.
 
+        Parameters
+        ----------
+            x: torch.tensor
+                Tensor to be encoded
+
+        Returns
+        -------
+            pis, means, stds: torch.tensor
+                Parameters of the MoG distribution (mixing probabilities, means and standard deviations respectively)
+        """
         comps = torch.chunk(
             self.encoder_net(x), self.n_comp, dim=-1
         )  # chunk used for separating the encoder output (batch, n_comp*(2*d_z + 1)) into n_comp separate vectors (batch, n_comp)
@@ -239,8 +258,14 @@ class MoGEncoder(nn.Module):
         """
         Computes the MoG distribution over the latent space.
 
-        Parameters:
-            x: [torch.Tensor]
+        Parameters
+        ----------
+            x: torch.Tensor
+
+        Returns
+        -------
+            mog_dist: MixtureOfGaussians
+                MoG distribution use to calculate the approximate posterior with rsample()
         """
         comps = torch.chunk(
             self.encoder_net(x), self.n_comp, dim=-1
@@ -285,8 +310,15 @@ class MoGEncoder(nn.Module):
         """
         Computes the encoded point without stochastic component.
 
-        Parameters:
+        Parameters
+        ----------
             x: torch.Tensor
+                Tensor to be encoded
+
+        Returns
+        -------
+            z: torch.Tensor
+                Sum of MoG components means with proportion of the mixing probabilities of the encoded point
         """
         comps = torch.chunk(
             self.encoder_net(x), self.n_comp, dim=-1
@@ -319,10 +351,19 @@ class MoGEncoder(nn.Module):
 
     def monte_carlo_encode(self, x, K=100):
         """
-        Computes the encoded point with stochastic component.
+        Computes a Monte Carlo simulation of the same point to approximate the true posterior distribution.
 
-        Parameters:
+        Parameters
+        ----------
             x: torch.Tensor
+                Tensor to be encoded
+            K: int
+                Number of Monte Carlo iterations
+
+        Returns
+        -------
+            sample: torch.Tensor
+                Mean from all samples (i.e. expectation of the encoded point estimated through Monte Carlo simulations)
         """
         comps = torch.chunk(
             self.encoder_net(x), self.n_comp, dim=-1
@@ -363,7 +404,9 @@ class MoGEncoder(nn.Module):
 
         samples = mog_dist.sample(sample_shape=(K,))
 
-        return samples.mean(dim=0)
+        sample = samples.mean(dim=0)
+
+        return sample
 
 
 # ---------- DECODER CLASSES DEFINITIONS ---------- #
@@ -372,25 +415,29 @@ class MoGEncoder(nn.Module):
 class NBDecoder(nn.Module):
     def __init__(self, decoder_net):
         """
-        Define a Negative Binomial decoder to obtain the parameters of the ZINB distribution.
+        Define a Negative Binomial decoder to obtain the parameters of the distribution.
 
-        Parameters:
-            decoder_net: [torch.nn.Module]
-                The decoder network, takes a tensor of dimension (batch, d_z) and outputs
-                a tensor of dimension (batch, 2*features), where d_z is the dimension of the
-                latent space.
+        Parameters
+        ----------
+            decoder_net: torch.nn.Module
+                The decoder network, takes a tensor of dimension (batch, d_z) and outputs a tensor of dimension (batch, 2*features), where d_z is the dimension of the latent space.
         """
         super().__init__()
         self.decoder_net = decoder_net
 
     def forward(self, z):
         """
-        Computes the Negative Binomial distribution over the data space. What we are getting is the mean
-        and the dispersion parameters, so it is needed a parameterization in order to get the NB
-        distribution parameters: total_count (dispersion) and probs (dispersion/(dispersion + mean)).
+        Computes the Negative Binomial distribution over the data space. What we are getting is the mean and the dispersion parameters, so it is needed a parameterization in order to get the NB distribution parameters: total_count (dispersion) and probs (dispersion/(dispersion + mean)).
 
-        Parameters:
-            z: [torch.Tensor]
+        Parameters
+        ----------
+            z: torch.Tensor
+                Latent space embeddings
+
+        Returns
+        -------
+            torch.distribution
+                Negative Binomial distribution use to calculate the likelihood using log_prob() method
         """
         mu, theta = torch.chunk(self.decoder_net(z), 2, dim=-1)
         # Ensure mean and dispersion are positive numbers and pi is in range [0,1]
@@ -416,26 +463,29 @@ class NBDecoder(nn.Module):
 class ZINBDecoder(nn.Module):
     def __init__(self, decoder_net):
         """
-        Define a Zero-inflated Negative Binomial decoder to obtain the parameters of the ZINB distribution.
+        Define a Zero-inflated Negative Binomial decoder to obtain the parameters of the distribution.
 
-        Parameters:
-            decoder_net: [torch.nn.Module]
-                The decoder network, takes a tensor of dimension (batch, d_z) and outputs
-                a tensor of dimension (batch, 3*features), where d_z is the dimension of the
-                latent space.
+        Parameters
+        ----------
+            decoder_net: torch.nn.Module
+                The decoder network, takes a tensor of dimension (batch, d_z) and outputs a tensor of dimension (batch, 3*features), where d_z is the dimension of the latent space.
         """
         super().__init__()
         self.decoder_net = decoder_net
 
     def forward(self, z):
         """
-        Computes the Zero-inflated Negative Binomial distribution over the data space. What we are getting is the mean
-        and the dispersion parameters, so it is needed a parameterization in order to get the NB
-        distribution parameters: total_count (dispersion) and probs (dispersion/(dispersion + mean)). We are also
-        getting the pi_logits parameters, which accounts for the zero inflation probability.
+        Computes the Zero-inflated Negative Binomial distribution over the data space. What we are getting is the zero probability, mean and the dispersion parameters, so it is needed a parameterization in order to get the NB distribution parameters: total_count (dispersion) and probs (dispersion/(dispersion + mean)).
 
-        Parameters:
-            z: [torch.Tensor]
+        Parameters
+        ----------
+            z: torch.Tensor
+                Latent space embeddings
+
+        Returns
+        -------
+            torch.distribution
+                Zero-inflated Negative Binomial distribution use to calculate the likelihood using log_prob() method
         """
         mu, theta, pi_logits = torch.chunk(self.decoder_net(z), 3, dim=-1)
         # Ensure mean and dispersion are positive numbers and pi is in range [0,1]
@@ -459,56 +509,18 @@ class ZINBDecoder(nn.Module):
 
         return td.Independent(ZINB(nb, pi), 1)
 
-    def monte_carlo_decode(self, z, K=100):
-        """
-        Computes the Zero-inflated Negative Binomial mode (or expected value) through Monte Carlo approximation.
-        Parameters:
-            z: [torch.Tensor]
-                Latent space point.
-            K: [int]
-                Number of Monte Carlo iterations.
-        """
-        mu, theta, pi_logits = torch.chunk(self.decoder_net(z), 3, dim=-1)
-        # Ensure mean and dispersion are positive numbers and pi is in range [0,1]
-
-        mu = F.softplus(mu)
-        theta = F.softplus(theta) + 1e-4
-
-        pi = torch.sigmoid(pi_logits)
-
-        # Parameterization into NB parameters
-        p = theta / (theta + mu)
-
-        r = theta
-
-        # Clamp values to avoid huge / small probabilities
-        p = torch.clamp(p, min=1e-5, max=1 - 1e-5)
-
-        # Create Negative Binomial component
-        nb = td.NegativeBinomial(total_count=r, probs=p)
-
-        # Define Zero-inflated model
-        zinb = td.Independent(ZINB(nb, pi), 1)
-
-        # Sample sample sample!
-        samples = zinb.sample(sample_shape=(K,))
-
-        return samples.mean(dim=0).floor().int()
-
 
 class DMDecoder(nn.Module):
     def __init__(self, decoder_net, total_count, eps=1e-8):
         """
         Define a Dirichlet-Multinomial decoder to obtain the parameters of the distribution.
 
-        Parameters:
+        Parameters
+        ----------
             decoder_net: torch.nn.Module
-                The decoder network, takes a tensor of dimension (batch, d_z) and outputs
-                a tensor of dimension (batch, features), where d_z is the dimension of the
-                latent space.
+                The decoder network, takes a tensor of dimension (batch, d_z) and outputs a tensor of dimension (batch, features), where d_z is the dimension of the latent space.
             total_count: int
-                Total number of reads (or organisms) per sample. In practice, it is just x_i.sum(),
-                where x_i is the sample i from the dataset.
+                Total number of reads (or organisms) per sample. In practice, it is just x_i.sum(), where x_i is the sample i from the dataset.
             eps: float
                 Small offset to avoid log(0) in probability computation.
         """
@@ -519,11 +531,17 @@ class DMDecoder(nn.Module):
 
     def forward(self, z):
         """
-        Computes the Dirichlet-Multinomial distribution over the data space. We are obtaining the concentration parameter
-        of the distribution, hence the decoder output would have shape (batch, features).
+        Computes the Dirichlet-Multinomial distribution over the data space. We are obtaining the concentration parameter of the distribution, hence the decoder output would have shape (batch, features).
 
-        Parameters:
+        Parameters
+        ----------
             z: torch.Tensor
+                Latent space embeddings
+
+        Returns
+        -------
+            torch.distribution
+                Dirichlet-Multinomial distribution use to calculate the likelihood using log_prob() method
         """
         conc_logits = self.decoder_net(z)
         concentration = F.softplus(conc_logits) + self.eps
@@ -540,17 +558,14 @@ class ZIDMDecoder(nn.Module):
         """
         Define a Zero-inflated Dirichlet-Multinomial decoder to obtain the parameters of the distribution.
 
-        Parameters:
+        Parameters
+        ----------
             decoder_net: [torch.nn.Module]
-                The decoder network, takes a tensor of dimension (batch, d_z) and outputs
-                a tensor of dimension (batch, features), where d_z is the dimension of the
-                latent space.
+                The decoder network, takes a tensor of dimension (batch, d_z) and outputs a tensor of dimension (batch, 2*features), where d_z is the dimension of the latent space.
             total_count: int
-                Total number of reads (or organisms) per sample. In practice, it is just x_i.sum(),
-                where x_i is the sample i from the dataset.
+                Total number of reads (or organisms) per sample. In practice, it is just x_i.sum(), where x_i is the sample i from the dataset.
             eps: float
                 Small offset to avoid log(0) in probability computation.
-
         """
         super().__init__()
         self.decoder_net = decoder_net
@@ -558,6 +573,19 @@ class ZIDMDecoder(nn.Module):
         self.eps = eps
 
     def forward(self, z):
+        """
+        Computes the Zero-inflated Dirichlet-Multinomial distribution over the data space. We are obtaining the zero probability and concentration parameter of the distribution, hence the decoder output would have shape (batch, 2*features).
+
+        Parameters
+        ----------
+            z: torch.Tensor
+                Latent space embeddings
+
+        Returns
+        -------
+            torch.distribution
+                Zero-inflated Dirichlet-Multinomial distribution use to calculate the likelihood using log_prob() method
+        """
         conc_logits, pi_logits = torch.chunk(self.decoder_net(z), 2, dim=-1)
 
         concentration = F.softplus(conc_logits) + self.eps
