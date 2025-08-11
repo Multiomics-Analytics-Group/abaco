@@ -1,5 +1,5 @@
 # ABaCo
-![img](docs/assets/abaco.svg)
+![img](docs/figures/overview.png)
 
 <h1 align="center">ABaCo</h1>
 <p align="center"><em>Batch Effect Correction framework for metagenomic data</em></p>
@@ -23,6 +23,7 @@
     <img src="https://img.shields.io/github/stars/Multiomics-Analytics-Group/abaco?style=social" alt="GitHub stars">
 </p>
 
+The integration of metagenomic data from multiple studies and experimental conditions is essential to understand the interactions between microbial communities in complex biological systems, but the inherent diversity and biological complexity pose methodological challenges that require refined strategies for atlas-level integration. ABaCo, a family of generative models based on Variational Autoencoders (VAEs) combined with an adversarial training, aim for the integration of metagenomic data from different studies by minimizing technical heterogeneity conserving biological significance. The VAE encodes the data into a latent space, while the discriminator is trained to detect the provenance of the data, eliminating variability associated with its origin; concurrently, the data is modeled using distributions suitable for raw counts, and the latent space follows a clustering prior to ensure biological conservation.
 
 ## Table of Contents
 
