@@ -1,5 +1,5 @@
 # ABaCo
-![img](docs/assets/abaco.svg)
+![img](docs/figures/overview.png)
 
 <h1 align="center">ABaCo</h1>
 <p align="center"><em>Batch Effect Correction framework for metagenomic data</em></p>
