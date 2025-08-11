@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 from plotly.validator_cache import ValidatorCache
 from plotly.subplots import make_subplots
 from clustergrammer2 import Network, CGM2
-from abaco.BatchEffectDataLoader import DataTransform
+from abaco.dataloader import DataTransform
 
 
 def plotPCoA(
