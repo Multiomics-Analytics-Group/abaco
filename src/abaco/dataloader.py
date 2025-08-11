@@ -158,13 +158,14 @@ def one_hot_encoding(
     Example
     -------
     >>> import pandas as pd
+    >>> import torch
     >>> labels = pd.Series(['A', 'B', 'A', 'C'])
-    >>> one_hot_matrix, categories = one_hot_encoding(labels)
+    >>> one_hot_matrix, categories = one_hot_encoding(labels, dtype=torch.int32)
     >>> print(one_hot_matrix)
     tensor([[1, 0, 0],
             [0, 1, 0],
             [1, 0, 0],
-            [0, 0, 1]])
+            [0, 0, 1]], dtype=torch.int32)
     >>> print(categories)
     ['A', 'B', 'C']
     """

@@ -24,6 +24,11 @@ def assert_path(filepath: str):
         If the filepath is not a string.
     FileNotFoundError
         If the filepath does not exist.
+
+    Example
+    -------
+    >>> assert_path("..")
+    >>> assert_path("./tests")
     """
     if not isinstance(filepath, str):
         raise TypeError(f"filepath must be a string: {type(filepath)}")
@@ -99,7 +104,8 @@ def assert_nonempty_keys(dictionary: dict):
         If dictionary is not a dict or if any key is empty or blank.
     """
     # PRECONDITIONS
-    assert isinstance(dictionary, dict), "dictionary must be a dict"
+    if not isinstance(dictionary, dict):
+        raise TypeError(f"dictionary must be a dict, got {type(dictionary)}")
 
     # MAIN FUNCTION
     for key in dictionary:
@@ -125,7 +131,8 @@ def assert_nonempty_vals(dictionary: dict):
         If dictionary is not a dict or if any value is empty or blank.
     """
     # PRECONDITIONS
-    assert isinstance(dictionary, dict), "dictionary must be a dict"
+    if not isinstance(dictionary, dict):
+        raise TypeError(f"dictionary must be a dict, got {type(dictionary)}")
 
     # MAIN FUNCTION
     for v in dictionary.items():
@@ -158,6 +165,13 @@ def normalize_url(host: str, port: int, scheme: str = "http") -> str:
     ------
     TypeError
         If host, port, or scheme are not of the correct type, or if URL cannot be normalized.
+
+    Examples
+    --------
+    >>> normalize_url("localhost", 7474)
+    'http://localhost:7474'
+    >>> normalize_url("example.com", 80, "bolt")
+    'bolt://example.com:80'
     """
     ## PRECONDITIONS
     if not isinstance(host, str):
@@ -240,13 +254,6 @@ def get_basename(fname: None | str = None) -> str:
     -------
     str
         Basename of the given filepath or the current file the function is executed in.
-
-    Examples
-    --------
-    >>> get_basename()
-    'utils'
-    >>> get_basename('this/is-a-filepath.csv')
-    'is-a-filepath'
     """
     if fname is not None:
         # PRECONDITION
@@ -272,13 +279,6 @@ def get_time(incl_time: bool = True, incl_timezone: bool = True) -> str:
     -------
     str
         String including date, timestamp and/or timezone, e.g. 'yyyyMMdd_hhmm_timezone'.
-
-    Examples
-    --------
-    >>> get_time()
-    '20231019_101758_CEST'
-    >>> get_time(incl_time=False)
-    '20231019_CEST'
 
     Raises
     ------
@@ -370,12 +370,6 @@ def init_log(filename: str, display: bool = False, logger_id: str | None = None)
     logging.Logger
         Configured logger object.
 
-    Examples
-    --------
-    >>> logger = init_log('logs/tmp.log', display=True)
-    >>> logger.info('Loading things')
-    [2023-10-20 10:38:03,074] root: INFO - Loading things
-
     Raises
     ------
     TypeError
@@ -432,33 +426,28 @@ def get_logger():
     return logger
 
 # FUNCTIONS FOR CONFIG
-def config_loader(filepath: str) -> dict:
-    """
-    Load a YAML config file as a dictionary.
+# def config_loader(filepath: str) -> dict:
+#     """
+#     Load a YAML config file as a dictionary.
 
-    Parameters
-    ----------
-    filepath : str
-        Path to the config file.
+#     Parameters
+#     ----------
+#     filepath : str
+#         Path to the config file.
 
-    Returns
-    -------
-    dict
-        Configuration parameters as a dictionary.
+#     Returns
+#     -------
+#     dict
+#         Configuration parameters as a dictionary.
+#     """
+#     # PRECONDITIONS
+#     assert_path(filepath)
 
-    Raises
-    ------
-    AssertionError
-        If the loaded content is not a dictionary.
-    """
-    # PRECONDITIONS
-    assert_path(filepath)
+#     # MAIN FUNCTION
+#     with open(filepath, "r") as f:
+#         contents = yaml.safe_load(f)
 
-    # MAIN FUNCTION
-    with open(filepath, "r") as f:
-        contents = yaml.safe_load(f)
+#     # POSTCONDITIONS
+#     assert isinstance(contents, dict), "content not returned as a dict"
 
-    # POSTCONDITIONS
-    assert isinstance(contents, dict), "content not returned as a dict"
-
-    return contents
+#     return contents
