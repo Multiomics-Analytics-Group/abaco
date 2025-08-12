@@ -11,7 +11,7 @@ import pandas as pd
 from scipy.stats import gaussian_kde
 import matplotlib.pyplot as plt
 import math
-from abaco.dataloader import class_to_int, one_hot_encoding
+from abaco.dataloader import one_hot_encoding
 import random
 import seaborn as sns
 
@@ -2953,7 +2953,7 @@ def abaco_run_ensemble(
         )
 
     else:
-        raise ValueError(f"Prior distribution select isn't a valid option.")
+        raise ValueError("Prior distribution select isn't a valid option.")
 
     # Defining the batch discriminator architecture
     disc_net = [d_z + K] + disc_net  # first layer: conditional

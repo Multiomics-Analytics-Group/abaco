@@ -5,6 +5,7 @@ import os
 import sys
 from datetime import datetime
 from urllib.parse import urlparse, urlunsplit
+
 # import yaml
 
 
@@ -424,6 +425,7 @@ def get_logger():
     logger.info(f"Path to log file: {log_file}")
 
     return logger
+
 
 # FUNCTIONS FOR CONFIG
 # def config_loader(filepath: str) -> dict:

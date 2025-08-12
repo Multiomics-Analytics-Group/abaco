@@ -518,7 +518,7 @@ def pairwise_distance(data, sample_label, batch_label, bio_label):
     long_dists_df = long_dists_df.query("pointA != pointB")
 
     # Add biological group information
-    bio_map = dict(zip(sample_ids, bios))
+    bio_map = dict(zip(sample_ids, bios, strict=False))
     long_dists_df["pointA_bio"] = long_dists_df["pointA"].map(bio_map)
     long_dists_df["pointB_bio"] = long_dists_df["pointB"].map(bio_map)
 
@@ -592,7 +592,7 @@ def pairwise_distance_std(data, sample_label, batch_label, bio_label):
     long_dists_df = long_dists_df.query("pointA != pointB")
 
     # Add biological group information
-    bio_map = dict(zip(sample_ids, bios))
+    bio_map = dict(zip(sample_ids, bios, strict=False))
     long_dists_df["pointA_bio"] = long_dists_df["pointA"].map(bio_map)
     long_dists_df["pointB_bio"] = long_dists_df["pointB"].map(bio_map)
 
@@ -666,7 +666,7 @@ def pairwise_distance_multi_run(data, sample_label, batch_label, bio_label):
     long_dists_df = long_dists_df.query("pointA != pointB")
 
     # Add biological group information
-    bio_map = dict(zip(sample_ids, bios))
+    bio_map = dict(zip(sample_ids, bios, strict=False))
     long_dists_df["pointA_bio"] = long_dists_df["pointA"].map(bio_map)
     long_dists_df["pointB_bio"] = long_dists_df["pointB"].map(bio_map)
 
