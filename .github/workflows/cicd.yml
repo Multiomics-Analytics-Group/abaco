@@ -20,6 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: psf/black@stable
+        with:
+          src: src tests
   lint:
     name: Lint with ruff
     runs-on: ubuntu-latest
