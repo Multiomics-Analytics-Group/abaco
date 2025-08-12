@@ -35,6 +35,12 @@ The integration of metagenomic data from multiple studies and experimental condi
 - [License](#license)
 
 ## Installation 
+
+ABaCo is available on PyPI: 
+```bash
+pip install abaco
+```
+
 ## Features
 ## Usage
 ## Documentation
