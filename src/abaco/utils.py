@@ -87,7 +87,7 @@ def create_folder(directory_path: str, is_nested: bool = False) -> bool:
                 os.mkdir(directory_path)
                 return True
         except OSError as e:
-            raise OSError(f"Error creating directory '{directory_path}': {e}")
+            raise OSError(f"Error creating directory '{directory_path}': {e}") from e
 
 
 def assert_nonempty_keys(dictionary: dict):
@@ -199,7 +199,7 @@ def normalize_url(host: str, port: int, scheme: str = "http") -> str:
     return url
 
 
-def get_args(prog_name: str, others: dict = {}):
+def get_args(prog_name: str, others: dict = None):
     """
     Initiate argparse.ArgumentParser() and add common arguments.
 
@@ -223,8 +223,11 @@ def get_args(prog_name: str, others: dict = {}):
     ### PRECONDITIONS
     if not isinstance(prog_name, str):
         raise TypeError(f"prog_name should be a string: {type(prog_name)}")
-    if not isinstance(others, dict):
+    if others is None:
+        others = {}
+    elif not isinstance(others, dict):
         raise TypeError(f"other kwargs must be a dict: {type(others)}")
+
     ## MAIN FUNCTION
     # init
     parser = argparse.ArgumentParser(prog=prog_name, **others)

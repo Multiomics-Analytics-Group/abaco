@@ -64,7 +64,7 @@ def DataTransform(
         The transformed data with the specified factors and transformed OTU counts.
     """
     if transformation == "CLR":
-        if count == False:
+        if not count:
             # Select only OTUs columns and adding a small offset
             df_otu = data.select_dtypes(include="number") + 1e-9
 
@@ -113,10 +113,9 @@ def DataReverseTransform(
     transformation="CLR",
     count=False,
 ):
-
     if transformation == "CLR":
         df_otu = data.select_dtypes(include="number")
-        if count == False:
+        if not count:
             df_otu_original = original_data.select_dtypes(include="number") + 1e-9
 
         else:
@@ -203,7 +202,6 @@ def ABaCoDataLoader(
     total_size=1024,
     total_batch=10,
 ):
-
     # Convert data to tensor (structure: tensor([otus], [batch]))
     otu_data = data.select_dtypes(include="number")
     otu_tensor = torch.tensor(otu_data.values, dtype=torch.float32)

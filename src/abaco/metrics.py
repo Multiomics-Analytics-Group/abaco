@@ -44,7 +44,7 @@ def kBET(data, batch_label="batch"):
     _, indx = knn.kneighbors(data_otus)
 
     p_values = []
-    for j, neighbor in enumerate(indx):
+    for _j, neighbor in enumerate(indx):
         gamma_j = []
         for i in data_batch.unique():
             mu_ij = (
@@ -111,7 +111,7 @@ def ARI(data, interest_label="tissue", n_clusters=None):
     data_otus = data.select_dtypes(include="number")  # OTUs
     data_bio = data[interest_label]  # Labels
 
-    if n_clusters == None:
+    if n_clusters is None:
         kmeans = KMeans(
             n_clusters=len(set(data_bio)), random_state=42
         )  # KMeans clustering
@@ -525,7 +525,7 @@ def pairwise_distance(data, sample_label, batch_label, bio_label):
     # Step 3: compute pairwise distance within and between every group
     within_bios = []
     between_bios = []
-    for idx, point in long_dists_df.iterrows():
+    for _idx, point in long_dists_df.iterrows():
         if point["pointA_bio"] == point["pointB_bio"]:
             within_bios.append(point["distance"])
         else:
@@ -599,7 +599,7 @@ def pairwise_distance_std(data, sample_label, batch_label, bio_label):
     # Step 3: compute pairwise distance within and between every group
     within_bios = []
     between_bios = []
-    for idx, point in long_dists_df.iterrows():
+    for _idx, point in long_dists_df.iterrows():
         if point["pointA_bio"] == point["pointB_bio"]:
             within_bios.append(point["distance"])
         else:
