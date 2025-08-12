@@ -1,5 +1,5 @@
 # ABaCo
-![img](docs/figures/overview.png)
+![img](https://raw.githubusercontent.com/Multiomics-Analytics-Group/abaco/refs/heads/main/docs/figures/overview.png)
 
 <h1 align="center">ABaCo</h1>
 <p align="center"><em>Batch Effect Correction framework for metagenomic data</em></p>
