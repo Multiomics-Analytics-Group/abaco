@@ -8,10 +8,8 @@ from abaco.utils import assert_path
 
 
 def DataPreprocess(
-        path:str, 
-        factors:list=["sample", "batch", "tissue"],
-        delimiter:str=","
-    ):
+    path: str, factors: list = ["sample", "batch", "tissue"], delimiter: str = ","
+):
     """
     Reads a CSV file and preprocesses the data by converting specified columns to categorical type.
     Parameters
@@ -29,7 +27,7 @@ def DataPreprocess(
     assert_path(path)
     if not isinstance(factors, list):
         raise TypeError("Factors should be a list of column names.")
-    
+
     # MAIN FUNCTION
     # Read the CSV file into a DataFrame
     df = pd.read_csv(path, sep=delimiter)
@@ -44,14 +42,11 @@ def DataPreprocess(
 
 
 def DataTransform(
-    data, 
-    factors=["sample", "batch", "tissue"], 
-    transformation="CLR", 
-    count=False
-):  
+    data, factors=["sample", "batch", "tissue"], transformation="CLR", count=False
+):
     """
     Transforms the data based on the specified transformation method.
-    
+
     Parameters
     ----------
     data : pd.DataFrame
@@ -69,7 +64,7 @@ def DataTransform(
         The transformed data with the specified factors and transformed OTU counts.
     """
     if transformation == "CLR":
-        if count == False:
+        if not count:
             # Select only OTUs columns and adding a small offset
             df_otu = data.select_dtypes(include="number") + 1e-9
 
@@ -118,10 +113,9 @@ def DataReverseTransform(
     transformation="CLR",
     count=False,
 ):
-
     if transformation == "CLR":
         df_otu = data.select_dtypes(include="number")
-        if count == False:
+        if not count:
             df_otu_original = original_data.select_dtypes(include="number") + 1e-9
 
         else:
@@ -134,44 +128,42 @@ def DataReverseTransform(
     return df
 
 
-def one_hot_encoding(
-        labels: pd.Series, 
-        dtype:torch.dtype = torch.float32
-    ) -> tuple:
+def one_hot_encoding(labels: pd.Series, dtype: torch.dtype = torch.float32) -> tuple:
     """
     Converts a series of labels into a one-hot encoded matrix.
 
     Parameters
     ----------
     labels : pd.Series
-        The input labels to be one-hot encoded. 
+        The input labels to be one-hot encoded.
     dtype : torch.dtype, optional
         The data type of the output tensor. Default is torch.float32.
-    
+
     Returns
     -------
     tuple
         A tuple containing:
         - torch.Tensor: A one-hot encoded matrix where each row corresponds to a label.
         - list: The categories (unique labels) encoded in matrix
-    
+
     Example
     -------
     >>> import pandas as pd
+    >>> import torch
     >>> labels = pd.Series(['A', 'B', 'A', 'C'])
-    >>> one_hot_matrix, categories = one_hot_encoding(labels)
+    >>> one_hot_matrix, categories = one_hot_encoding(labels, dtype=torch.int32)
     >>> print(one_hot_matrix)
     tensor([[1, 0, 0],
             [0, 1, 0],
             [1, 0, 0],
-            [0, 0, 1]])
+            [0, 0, 1]], dtype=torch.int32)
     >>> print(categories)
     ['A', 'B', 'C']
     """
     # Ensure labels are a pandas Series
     if not isinstance(labels, pd.Series):
         raise TypeError("Input labels must be a pandas Series.")
-    
+
     alphabet = labels.unique()
     label_to_int = {label: i for i, label in enumerate(alphabet)}
 
@@ -210,7 +202,6 @@ def ABaCoDataLoader(
     total_size=1024,
     total_batch=10,
 ):
-
     # Convert data to tensor (structure: tensor([otus], [batch]))
     otu_data = data.select_dtypes(include="number")
     otu_tensor = torch.tensor(otu_data.values, dtype=torch.float32)

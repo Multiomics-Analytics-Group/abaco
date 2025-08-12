@@ -11,7 +11,7 @@ import pandas as pd
 from scipy.stats import gaussian_kde
 import matplotlib.pyplot as plt
 import math
-from abaco.dataloader import class_to_int, one_hot_encoding
+from abaco.dataloader import one_hot_encoding
 import random
 import seaborn as sns
 
@@ -138,7 +138,6 @@ class NormalEncoder(nn.Module):
         self.encoder_net = encoder_net
 
     def encode(self, x):
-
         mu, var = torch.chunk(
             self.encoder_net(x), 2, dim=-1
         )  # chunk is used for separating the encoder output (batch, 2*d_z) into two separate vectors (batch, d_z)
@@ -197,7 +196,6 @@ class MoGEncoder(nn.Module):
         self.encoder_net = encoder_net
 
     def encode(self, x):
-
         comps = torch.chunk(
             self.encoder_net(x), self.n_comp, dim=-1
         )  # chunk used for separating the encoder output (batch, n_comp*(2*d_z + 1)) into n_comp separate vectors (batch, n_comp)
@@ -899,7 +897,6 @@ class MixtureOfGaussians(td.Distribution):
         return second_moment - mixture_mean**2
 
     def entropy(self):
-
         raise NotImplementedError(
             "Entropy is not implemented in Mixture of Gaussians distribution."
         )
@@ -1123,7 +1120,6 @@ class ConditionalVAE(nn.Module):
         return z
 
     def log_prob(self, z):
-
         return self.prior().log_prob(z)
 
     def pca_posterior(self, x):
@@ -1234,7 +1230,7 @@ class ConditionalEnsembleVAE(nn.Module):
 
         recon_term = 0
 
-        for decoder in self.decoders:
+        for _decoder in self.decoders:
             p_xz = self.decoder(z)
 
             recon_term += p_xz.log_prob(x).mean()
@@ -1256,7 +1252,6 @@ class ConditionalEnsembleVAE(nn.Module):
         return z
 
     def log_prob(self, z):
-
         return self.prior().log_prob(z)
 
     def pca_posterior(self, x):
@@ -1397,7 +1392,6 @@ class VampPriorMixtureConditionalVAE(nn.Module):
         return prior
 
     def sample(self, n_samples):
-
         prior = self.get_prior()
 
         return prior.rsample(sample_shape=torch.Size([n_samples]))
@@ -1435,7 +1429,6 @@ class VampPriorMixtureConditionalVAE(nn.Module):
         return pca.fit_transform(z.detach().cpu())
 
     def log_prob(self, z):
-
         prior = self.get_prior()
 
         return prior.log_prob(z)
@@ -1540,7 +1533,6 @@ class VampPriorMixtureConditionalEnsembleVAE(nn.Module):
         return prior
 
     def sample(self, n_samples):
-
         prior = self.get_prior()
 
         return prior.rsample(sample_shape=torch.Size([n_samples]))
@@ -1578,7 +1570,6 @@ class VampPriorMixtureConditionalEnsembleVAE(nn.Module):
         return pca.fit_transform(z.detach().cpu())
 
     def log_prob(self, z):
-
         prior = self.get_prior()
 
         return prior.log_prob(z)
@@ -1594,7 +1585,7 @@ class VampPriorMixtureConditionalEnsembleVAE(nn.Module):
 
         # Forward pass to the decoder
         recon_term = 0
-        for decoder in self.decoders:
+        for _decoder in self.decoders:
             p_xz = self.decoder(z)
             recon_term += p_xz.log_prob(x).mean()
 
@@ -1620,7 +1611,6 @@ class BatchDiscriminator(nn.Module):
         return batch_class
 
     def loss(self, pred, true):
-
         loss = nn.CrossEntropyLoss()
 
         return loss(pred, true)
@@ -1726,11 +1716,10 @@ def pre_train_abaco(
     )
 
     for epoch in range(epochs):
-
         for x, y_onehot, z_onehot in data_loader:
             # Move all tensors to the correct device
             x = x.to(device)
-            if count == False:
+            if not count:
                 x_sum = x.sum(dim=1, keepdim=True)
                 x = x / x_sum
 
@@ -1741,7 +1730,7 @@ def pre_train_abaco(
 
             # === Step 1: Discriminator on latent (freeze encoder) ===
             with torch.no_grad():
-                if normal == False:
+                if not normal:
                     pi, mu, _ = vae.encoder.encode(torch.cat([x, y_onehot], dim=1))
                     mu_bar = (mu * pi.unsqueeze(2)).sum(dim=1)
                     d_input = torch.cat([mu_bar, z_onehot], dim=1)
@@ -1761,7 +1750,7 @@ def pre_train_abaco(
 
             # === Step 2: Adversarial update on encoder ===
             adv_optim.zero_grad()
-            if normal == False:
+            if not normal:
                 pi, mu, _ = vae.encoder.encode(torch.cat([x, y_onehot], dim=1))
                 mu_bar = (mu * pi.unsqueeze(2)).sum(dim=1)
                 logits_fake = discriminator(torch.cat([mu_bar, z_onehot], dim=1))
@@ -1796,7 +1785,7 @@ def pre_train_abaco(
                 contra=f"{contra_loss.item():.4f}",
                 disc=f"{loss_disc.item():.4f}",
                 adv=f"{loss_adv.item():.4f}",
-                epoch=f"{epoch}/{epochs+1}",
+                epoch=f"{epoch}/{epochs + 1}",
             )
             progress_bar.update()
 
@@ -1835,7 +1824,6 @@ def train_abaco(
 
         data_iter = iter(data_loader)
         for loader_data in data_iter:
-
             x = loader_data[0].to(device)
             y = loader_data[1].to(device).float()  # Batch label
             z = loader_data[2].to(device).float()  # Bio type label
@@ -1917,7 +1905,7 @@ def train_abaco(
             # Update progress bar
             progress_bar.set_postfix(
                 vae_loss=f"{vae_loss.item():12.4f}",
-                epoch=f"{epoch+1}/{epochs}",
+                epoch=f"{epoch + 1}/{epochs}",
             )
             progress_bar.update()
 
@@ -2308,7 +2296,7 @@ def abaco_run(
     adv_optim = torch.optim.Adam(vae.encoder.parameters(), lr=adv_lr)
 
     # FIRST STEP: TRAIN VAE MODEL TO RECONSTRUCT DATA AND BATCH MIXING OF LATENT SPACE
-    if new_pre_train == False:
+    if not new_pre_train:
         pre_train_abaco(
             vae=vae,
             vae_optim_pre=vae_optim_pre,
@@ -2442,7 +2430,7 @@ def abaco_recon(
 
     for x in dataloader:
         x = x[0].to(device)
-        if det_encode == True:
+        if det_encode:
             z = model.encoder.det_encode(torch.cat([x, ohe_batch.to(device)], dim=1))
         else:
             z = model.encoder.monte_carlo_encode(
@@ -2509,11 +2497,10 @@ def pre_train_abaco_ensemble(
     )
 
     for epoch in range(epochs):
-
         for x, y_onehot, z_onehot in data_loader:
             # Move all tensors to the correct device
             x = x.to(device)
-            if count == False:
+            if not count:
                 x_sum = x.sum(dim=1, keepdim=True)
                 x = x / x_sum
 
@@ -2524,7 +2511,7 @@ def pre_train_abaco_ensemble(
 
             # === Step 1: Discriminator on latent (freeze encoder) ===
             with torch.no_grad():
-                if normal == False:
+                if not normal:
                     pi, mu, _ = vae.encoder.encode(torch.cat([x, y_onehot], dim=1))
                     mu_bar = (mu * pi.unsqueeze(2)).sum(dim=1)
                     d_input = torch.cat([mu_bar, z_onehot], dim=1)
@@ -2544,7 +2531,7 @@ def pre_train_abaco_ensemble(
 
             # === Step 2: Adversarial update on encoder ===
             adv_optim.zero_grad()
-            if normal == False:
+            if not normal:
                 pi, mu, _ = vae.encoder.encode(torch.cat([x, y_onehot], dim=1))
                 mu_bar = (mu * pi.unsqueeze(2)).sum(dim=1)
                 logits_fake = discriminator(torch.cat([mu_bar, z_onehot], dim=1))
@@ -2583,7 +2570,7 @@ def pre_train_abaco_ensemble(
                 contra=f"{contra_loss.item():.4f}",
                 disc=f"{loss_disc.item():.4f}",
                 adv=f"{loss_adv.item():.4f}",
-                epoch=f"{epoch}/{epochs+1}",
+                epoch=f"{epoch}/{epochs + 1}",
             )
             progress_bar.update()
 
@@ -2622,7 +2609,6 @@ def train_abaco_ensemble(
 
         data_iter = iter(data_loader)
         for loader_data in data_iter:
-
             x = loader_data[0].to(device)
             y = loader_data[1].to(device).float()  # Batch label
             z = loader_data[2].to(device).float()  # Bio type label
@@ -2713,7 +2699,7 @@ def train_abaco_ensemble(
             # Update progress bar
             progress_bar.set_postfix(
                 vae_loss=f"{vae_loss.item():12.4f}",
-                epoch=f"{epoch+1}/{epochs}",
+                epoch=f"{epoch + 1}/{epochs}",
             )
             progress_bar.update()
 
@@ -2953,7 +2939,7 @@ def abaco_run_ensemble(
         )
 
     else:
-        raise ValueError(f"Prior distribution select isn't a valid option.")
+        raise ValueError("Prior distribution select isn't a valid option.")
 
     # Defining the batch discriminator architecture
     disc_net = [d_z + K] + disc_net  # first layer: conditional
@@ -3054,7 +3040,7 @@ def abaco_recon_ensemble(
 
     for x in dataloader:
         x = x[0].to(device)
-        if det_encode == True:
+        if det_encode:
             z = model.encoder.det_encode(torch.cat([x, ohe_batch.to(device)], dim=1))
         else:
             z = model.encoder.monte_carlo_encode(
@@ -3128,11 +3114,10 @@ def new_pre_train_abaco(
     )
 
     for epoch in range(normal_epochs):
-
         for x, y_onehot, z_onehot in data_loader:
             # Move all tensors to the correct device
             x = x.to(device)
-            if count == False:
+            if not count:
                 x_sum = x.sum(dim=1, keepdim=True)
                 x = x / x_sum
 
@@ -3143,7 +3128,7 @@ def new_pre_train_abaco(
 
             # === Step 1: Discriminator on latent (freeze encoder) ===
             with torch.no_grad():
-                if normal == False:
+                if not normal:
                     pi, mu, _ = vae.encoder.encode(torch.cat([x, y_onehot], dim=1))
                     mu_bar = (mu * pi.unsqueeze(2)).sum(dim=1)
                     d_input = torch.cat([mu_bar, z_onehot], dim=1)
@@ -3163,7 +3148,7 @@ def new_pre_train_abaco(
 
             # === Step 2: Adversarial update on encoder ===
             adv_optim.zero_grad()
-            if normal == False:
+            if not normal:
                 pi, mu, _ = vae.encoder.encode(torch.cat([x, y_onehot], dim=1))
                 mu_bar = (mu * pi.unsqueeze(2)).sum(dim=1)
                 logits_fake = discriminator(torch.cat([mu_bar, z_onehot], dim=1))
@@ -3198,7 +3183,7 @@ def new_pre_train_abaco(
                 contra=f"{contra_loss.item():.4f}",
                 disc=f"{loss_disc.item():.4f}",
                 adv=f"{loss_adv.item():.4f}",
-                epoch=f"{epoch}/{normal_epochs+1}",
+                epoch=f"{epoch}/{normal_epochs + 1}",
             )
             progress_bar.update()
 
@@ -3213,11 +3198,10 @@ def new_pre_train_abaco(
     )
 
     for epoch in range(mog_epochs):
-
         for x, y_onehot, z_onehot in data_loader:
             # Move all tensors to the correct device
             x = x.to(device)
-            if count == False:
+            if not count:
                 x_sum = x.sum(dim=1, keepdim=True)
                 x = x / x_sum
 
@@ -3228,7 +3212,7 @@ def new_pre_train_abaco(
 
             # === Step 1: Discriminator on latent (freeze encoder) ===
             with torch.no_grad():
-                if normal == False:
+                if not normal:
                     pi, mu, _ = vae.encoder.encode(torch.cat([x, y_onehot], dim=1))
                     mu_bar = (mu * pi.unsqueeze(2)).sum(dim=1)
                     d_input = torch.cat([mu_bar, z_onehot], dim=1)
@@ -3248,7 +3232,7 @@ def new_pre_train_abaco(
 
             # === Step 2: Adversarial update on encoder ===
             adv_optim.zero_grad()
-            if normal == False:
+            if not normal:
                 pi, mu, _ = vae.encoder.encode(torch.cat([x, y_onehot], dim=1))
                 mu_bar = (mu * pi.unsqueeze(2)).sum(dim=1)
                 logits_fake = discriminator(torch.cat([mu_bar, z_onehot], dim=1))
@@ -3283,7 +3267,7 @@ def new_pre_train_abaco(
                 #                 contra=f"{contra_loss.item():.4f}",
                 disc=f"{loss_disc.item():.4f}",
                 adv=f"{loss_adv.item():.4f}",
-                epoch=f"{epoch}/{mog_epochs+1}",
+                epoch=f"{epoch}/{mog_epochs + 1}",
             )
             progress_bar.update()
 
@@ -3514,7 +3498,6 @@ class MoCPEncoder(nn.Module):
         self.encoder_net = encoder_net
 
     def encode(self, x):
-
         comps = torch.chunk(
             self.encoder_net(x), self.n_comp, dim=-1
         )  # chunk used for separating the encoder output (batch, n_comp*(2*d_z + 1)) into n_comp separate vectors (batch, n_comp)
@@ -3777,7 +3760,7 @@ class metaABaCo(nn.Module):
             batch_size=len(self.data),
         )
 
-        for x, y, z in self.dataloader:  # just one iteration
+        for x, _y, _z in self.dataloader:  # just one iteration
             self.total_count = x.sum(dim=1).to(self.device)
 
         # Define Encoder
@@ -3914,7 +3897,6 @@ class metaABaCo(nn.Module):
             total_loss = 0.0
             data_iter = iter(train_loader)
             for loader_data in data_iter:
-
                 x = loader_data[0].to(self.device)
                 ohe_batch = loader_data[1].to(self.device).float()  # Batch label
                 ohe_bio = loader_data[2].to(self.device).float()  # Bio type label
@@ -3971,8 +3953,8 @@ class metaABaCo(nn.Module):
                     vae_loss=f"{total_loss:.4f}",
                     bio_penalty=f"{bio_penalty:.4f}",
                     clustering_loss=f"{cluster_penalty:.4f}",
-                    elbo=f"{(recon_loss+kl_loss):.4f}",
-                    epoch=f"{epoch}/{self.phase_1_epochs+1}",
+                    elbo=f"{(recon_loss + kl_loss):.4f}",
+                    epoch=f"{epoch}/{self.phase_1_epochs + 1}",
                 )
                 progress_bar.update()
 
@@ -4006,7 +3988,6 @@ class metaABaCo(nn.Module):
             total_loss = 0.0
             data_iter = iter(train_loader)
             for loader_data in data_iter:
-
                 x = loader_data[0].to(self.device)
                 ohe_batch = loader_data[1].to(self.device).float()  # Batch label
                 ohe_bio = loader_data[2].to(self.device).float()  # Bio type label
@@ -4091,10 +4072,10 @@ class metaABaCo(nn.Module):
                     vae_loss=f"{total_loss:.4f}",
                     bio_penalty=f"{bio_penalty:.4f}",
                     clustering_loss=f"{cluster_penalty:.4f}",
-                    elbo=f"{(recon_loss+kl_loss):.4f}",
+                    elbo=f"{(recon_loss + kl_loss):.4f}",
                     disc_loss=f"{disc_loss:.4f}",
                     adv_loss=f"{adv_loss:.4f}",
-                    epoch=f"{epoch}/{self.phase_2_epochs+1}",
+                    epoch=f"{epoch}/{self.phase_2_epochs + 1}",
                 )
                 progress_bar.update()
 
@@ -4129,7 +4110,6 @@ class metaABaCo(nn.Module):
 
             data_iter = iter(train_loader)
             for loader_data in data_iter:
-
                 x = loader_data[0].to(self.device)
                 ohe_batch = loader_data[1].to(self.device).float()  # Batch label
                 ohe_bio = loader_data[2].to(self.device).float()  # Bio type label
@@ -4183,7 +4163,7 @@ class metaABaCo(nn.Module):
                 progress_bar.set_postfix(
                     vae_loss=f"{vae_loss:12.4f}",
                     cycle_loss=f"{cycle_loss:12.4f}",
-                    epoch=f"{epoch+1}/{self.phase_3_epochs}",
+                    epoch=f"{epoch + 1}/{self.phase_3_epochs}",
                 )
                 progress_bar.update()
 
@@ -4210,7 +4190,6 @@ class metaABaCo(nn.Module):
         disc_lr=1e-3,
         adv_lr=1e-3,
     ):
-
         # Define optimizer
         vae_optimizer_1 = torch.optim.Adam(
             [
@@ -4317,7 +4296,7 @@ class metaABaCo(nn.Module):
             # Encode and decode the input data along with the one-hot encoded batch label
             q_zx = self.vae.encoder(torch.cat([x, ohe_batch], dim=1))  # td.Distribution
             z = q_zx.rsample()  # latent points
-            if mask == True:
+            if mask:
                 p_xz = self.vae.decoder(
                     torch.cat([z, torch.zeros_like(ohe_batch.to(self.device))], dim=1)
                 )  # td.Distribution

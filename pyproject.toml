@@ -1,5 +1,6 @@
-# ref: https://setuptools.pypa.io/en/stable/userguide/pyproject_config.html
 [project]
+name = "abaco"
+description = "Batch Effect Correction framework for metagenomic data"
 authors = [
     { name = "Edir Sebastián Vidal Castro", email = "edirvidalcastro@gmail.com" },
     { name = "Angel L. P." },
@@ -9,42 +10,33 @@ authors = [
     { name = "Juliana Assis" },
     { name = "Sebastián Ayala-Ruano" }
 ]
-description = "Batch Effect Correction framework for metagenomic data"
-name = "abaco"
-# This means: Load the version from the package itself.
-# See the section below: [tools.setuptools.dynamic]
 dynamic = [
-  "version", # version is loaded from the package
-  "dependencies", # add if using requirements.txt
+  "version",
+  "dependencies",
 ]
 readme = "README.md"
-requires-python = ">=3.9" # test all higher Python versions
-# These are keywords
+requires-python = ">=3.11"
 classifiers = [
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
-#  "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
 ]
 license = "MIT" # https://choosealicense.com/
-# # add dependencies here: (use one of the two)
-# dependencies = ["numpy", "pandas", "scipy", "matplotlib", "seaborn"]
-# use requirements.txt instead of pyproject.toml for dependencies
-# https://stackoverflow.com/a/73600610/9684872
-# ! uncomment also dependencies in the dynamic section above
+
+
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
 
 
 [project.urls]
 "Bug Tracker" = "https://github.com/Multiomics-Analytics-Group/abaco/issues"
-"Homepage" = "https://github.com/Multiomics-Analytics-Group/abaco"
+homepage = "https://github.com/Multiomics-Analytics-Group/abaco"
+repository = "https://github.com/Multiomics-Analytics-Group/abaco"
+documentation = "https://abaco.readthedocs.io"
+
 
 [project.optional-dependencies]
-# Optional dependencies to locally build the documentation, also used for 
-# readthedocs.
+# for building docs locally and readthedocs
 docs = [
   "sphinx",
   "sphinx-book-theme",
@@ -63,25 +55,20 @@ dev = [
   "ipykernel"
 ]
 
-[tool.ruff]
-# https://docs.astral.sh/ruff/rules/#flake8-bandit-s
 
 [tool.ruff.lint]
-# https://docs.astral.sh/ruff/tutorial/#rule-selection
-# 1. Enable flake8-bugbear (`B`) rules
-# 2. Enable pycodestyle (`E`) errors and (`W`) warnings
-# 3. Pyflakes (`F`) errors
-extend-select = ["E", "W", "F", "B"]
-# Ignore line length errors:
-# ignore = ["E501"]
+extend-select = ["E", "W", "F"] #, "B"]
+ignore = ["E501",]
+
+
+[tool.isort]
+profile = "black"
+
 
 [build-system]
 build-backend = "setuptools.build_meta"
 requires = ["setuptools>=64", "setuptools_scm>=8"]
 
-[tool.setuptools_scm]
-# https://setuptools-scm.readthedocs.io/ 
-# used to pick up the version from the git tags or the latest commit.
 
-[tool.isort]
-profile = "black"
+[tool.setuptools_scm]
+fallback_version = "0.0.0"
