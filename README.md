@@ -38,7 +38,7 @@ The integration of metagenomic data from multiple studies and experimental condi
 ## Features
 ## Usage
 ## Documentation
-Tutorials and documentation are available on [Read the Docs](https://abaco.readthedocs.io/)
+Tutorials and documentation are available on [Read the Docs](https://mona-abaco.readthedocs.io/)
 ## Contributing
 1. Fork the repository
 2. Clone the repository
