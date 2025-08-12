@@ -57,7 +57,8 @@ dev = [
 
 
 [tool.ruff.lint]
-extend-select = ["E", "W", "F", "B"]
+extend-select = ["E", "W", "F"] #, "B"]
+ignore = ["E501",]
 
 
 [tool.isort]
