@@ -2,13 +2,13 @@
 name = "abaco"
 description = "Batch Effect Correction framework for metagenomic data"
 authors = [
-    { name = "Edir Sebastián Vidal Castro", email = "edirvidalcastro@gmail.com" },
+    { name = "Edir Sebastián Vidal Castro"},
     { name = "Angel L. P." },
-    { name = "Alberto Santos", email = "albsad@dtu.dk" },
     { name = "Henry Webel" },
     { name = "Atieh Gharib" },    
     { name = "Juliana Assis" },
-    { name = "Sebastián Ayala-Ruano" }
+    { name = "Sebastián Ayala-Ruano" },
+    { name = "Alberto Santos", email = "albsad@dtu.dk" }
 ]
 dynamic = [
   "version",
@@ -32,7 +32,7 @@ dependencies = {file = ["requirements.txt"]}
 "Bug Tracker" = "https://github.com/Multiomics-Analytics-Group/abaco/issues"
 homepage = "https://github.com/Multiomics-Analytics-Group/abaco"
 repository = "https://github.com/Multiomics-Analytics-Group/abaco"
-documentation = "https://abaco.readthedocs.io"
+documentation = "https://mona-abaco.readthedocs.io"
 
 
 [project.optional-dependencies]
