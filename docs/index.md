@@ -1,7 +1,8 @@
-# ABaCo Overview
+<!-- https://myst-parser.readthedocs.io/en/latest/faq/index.html
+#include-a-file-from-outside-the-docs-folder-like-readme-md -->
 
 ```{include} ../README.md
-:start-line: 1
+:caption: Overview
 :relative-docs: docs
 :relative-images:
 ```
