@@ -1,4 +1,4 @@
-# ![ABaCo Logg](https://raw.githubusercontent.com/Multiomics-Analytics-Group/abaco/refs/heads/main/docs/images/logo/abaco_logo.svg)
+# ![ABaCo Logg](https://raw.githubusercontent.com/Multiomics-Analytics-Group/abaco/HEAD/docs/images/logo/abaco_logo.svg)
 
 <p align="center"><em>Batch Effect Correction framework for metagenomic data</em></p>
 
@@ -25,7 +25,7 @@ The integration of metagenomic data from multiple studies and experimental condi
 
 An overview of the VueGen workflow is shown in the figure below:
 
-![ABaCo Abstract](https://raw.githubusercontent.com/Multiomics-Analytics-Group/vuegen/main/docs/images/abaco_overview.png)
+![ABaCo Abstract](https://raw.githubusercontent.com/Multiomics-Analytics-Group/abaco/HEAD/docs/images/abaco_overview.png)
 
 ## Table of Contents
 
