@@ -3,7 +3,6 @@
 
 ```{include} ../README.md
 :caption: Overview
-:start-line: 1
 :relative-docs: docs
 :relative-images:
 ```
