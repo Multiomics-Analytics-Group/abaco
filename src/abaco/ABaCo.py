@@ -2127,14 +2127,17 @@ def abaco_run(
 
             decoder = ZINBDecoder(nn.Sequential(*modules))
         else:
-            decoder_net = [d_z + n_batches] + decoder_net  # first value: conditional
-            decoder_net.append(2 * input_size)  # last layer
-            modules = []
-            for i in range(len(decoder_net) - 1):
-                modules.append(nn.Linear(decoder_net[i], decoder_net[i + 1]))
-                modules.append(vae_act_func)
-            modules.pop()  # Drop last activation function
-            decoder = ZIDirichletDecoder(nn.Sequential(*modules))
+            raise NotImplementedError(
+                "Relative abundance data type isn't implemented yet to ABaCo. Set variable 'count' to True."
+            )
+            # decoder_net = [d_z + n_batches] + decoder_net  # first value: conditional
+            # decoder_net.append(2 * input_size)  # last layer
+            # modules = []
+            # for i in range(len(decoder_net) - 1):
+            #     modules.append(nn.Linear(decoder_net[i], decoder_net[i + 1]))
+            #     modules.append(vae_act_func)
+            # modules.pop()  # Drop last activation function
+            # decoder = ZIDirichletDecoder(nn.Sequential(*modules))
 
         # Defining VAE
         vae = VampPriorMixtureConditionalVAE(
@@ -2187,14 +2190,17 @@ def abaco_run(
 
             decoder = ZINBDecoder(nn.Sequential(*modules))
         else:
-            decoder_net = [d_z + n_batches] + decoder_net  # first value: conditional
-            decoder_net.append(2 * input_size)  # last layer
-            modules = []
-            for i in range(len(decoder_net) - 1):
-                modules.append(nn.Linear(decoder_net[i], decoder_net[i + 1]))
-                modules.append(vae_act_func)
-            modules.pop()  # Drop last activation function
-            decoder = ZIDirichletDecoder(nn.Sequential(*modules))
+            raise NotImplementedError(
+                "Relative abundance data type isn't implemented yet to ABaCo. Set variable 'count' to True."
+            )
+            # decoder_net = [d_z + n_batches] + decoder_net  # first value: conditional
+            # decoder_net.append(2 * input_size)  # last layer
+            # modules = []
+            # for i in range(len(decoder_net) - 1):
+            #     modules.append(nn.Linear(decoder_net[i], decoder_net[i + 1]))
+            #     modules.append(vae_act_func)
+            # modules.pop()  # Drop last activation function
+            # decoder = ZIDirichletDecoder(nn.Sequential(*modules))
 
         # Defining prior
         prior = MoGPrior(d_z, K)
@@ -2243,14 +2249,17 @@ def abaco_run(
 
             decoder = ZINBDecoder(nn.Sequential(*modules))
         else:
-            decoder_net = [d_z + n_batches] + decoder_net  # first value: conditional
-            decoder_net.append(2 * input_size)  # last layer
-            modules = []
-            for i in range(len(decoder_net) - 1):
-                modules.append(nn.Linear(decoder_net[i], decoder_net[i + 1]))
-                modules.append(vae_act_func)
-            modules.pop()  # Drop last activation function
-            decoder = ZIDirichletDecoder(nn.Sequential(*modules))
+            raise NotImplementedError(
+                "Relative abundance data type isn't implemented yet to ABaCo. Set variable 'count' to True."
+            )
+            # decoder_net = [d_z + n_batches] + decoder_net  # first value: conditional
+            # decoder_net.append(2 * input_size)  # last layer
+            # modules = []
+            # for i in range(len(decoder_net) - 1):
+            #     modules.append(nn.Linear(decoder_net[i], decoder_net[i + 1]))
+            #     modules.append(vae_act_func)
+            # modules.pop()  # Drop last activation function
+            # decoder = ZIDirichletDecoder(nn.Sequential(*modules))
 
         # Defining prior
         prior = NormalPrior(d_z)
@@ -2787,18 +2796,21 @@ def abaco_run_ensemble(
                 decoder = ZINBDecoder(nn.Sequential(*modules))
                 decoders.append(decoder)
         else:
-            for _ in range(n_dec):
-                decoder_net = [
-                    d_z + n_batches
-                ] + decoder_net  # first value: conditional
-                decoder_net.append(2 * input_size)  # last layer
-                modules = []
-                for i in range(len(decoder_net) - 1):
-                    modules.append(nn.Linear(decoder_net[i], decoder_net[i + 1]))
-                    modules.append(vae_act_func)
-                modules.pop()  # Drop last activation function
-                decoder = ZIDirichletDecoder(nn.Sequential(*modules))
-                decoders.append(decoder)
+            raise NotImplementedError(
+                "Relative abundance data type isn't implemented yet to ABaCo. Set variable 'count' to True."
+            )
+            # for _ in range(n_dec):
+            #     decoder_net = [
+            #         d_z + n_batches
+            #     ] + decoder_net  # first value: conditional
+            #     decoder_net.append(2 * input_size)  # last layer
+            #     modules = []
+            #     for i in range(len(decoder_net) - 1):
+            #         modules.append(nn.Linear(decoder_net[i], decoder_net[i + 1]))
+            #         modules.append(vae_act_func)
+            #     modules.pop()  # Drop last activation function
+            #     decoder = ZIDirichletDecoder(nn.Sequential(*modules))
+            #     decoders.append(decoder)
 
         # Defining VAE
         vae = VampPriorMixtureConditionalEnsembleVAE(
@@ -2851,14 +2863,17 @@ def abaco_run_ensemble(
 
             decoder = ZINBDecoder(nn.Sequential(*modules))
         else:
-            decoder_net = [d_z + n_batches] + decoder_net  # first value: conditional
-            decoder_net.append(2 * input_size)  # last layer
-            modules = []
-            for i in range(len(decoder_net) - 1):
-                modules.append(nn.Linear(decoder_net[i], decoder_net[i + 1]))
-                modules.append(vae_act_func)
-            modules.pop()  # Drop last activation function
-            decoder = ZIDirichletDecoder(nn.Sequential(*modules))
+            raise NotImplementedError(
+                "Relative abundance data type isn't implemented yet to ABaCo. Set variable 'count' to True."
+            )
+            # decoder_net = [d_z + n_batches] + decoder_net  # first value: conditional
+            # decoder_net.append(2 * input_size)  # last layer
+            # modules = []
+            # for i in range(len(decoder_net) - 1):
+            #     modules.append(nn.Linear(decoder_net[i], decoder_net[i + 1]))
+            #     modules.append(vae_act_func)
+            # modules.pop()  # Drop last activation function
+            # decoder = ZIDirichletDecoder(nn.Sequential(*modules))
 
         # Defining prior
         prior = MoGPrior(d_z, K)
@@ -2907,14 +2922,17 @@ def abaco_run_ensemble(
 
             decoder = ZINBDecoder(nn.Sequential(*modules))
         else:
-            decoder_net = [d_z + n_batches] + decoder_net  # first value: conditional
-            decoder_net.append(2 * input_size)  # last layer
-            modules = []
-            for i in range(len(decoder_net) - 1):
-                modules.append(nn.Linear(decoder_net[i], decoder_net[i + 1]))
-                modules.append(vae_act_func)
-            modules.pop()  # Drop last activation function
-            decoder = ZIDirichletDecoder(nn.Sequential(*modules))
+            raise NotImplementedError(
+                "Relative abundance data type isn't implemented yet to ABaCo. Set variable 'count' to True."
+            )
+            # decoder_net = [d_z + n_batches] + decoder_net  # first value: conditional
+            # decoder_net.append(2 * input_size)  # last layer
+            # modules = []
+            # for i in range(len(decoder_net) - 1):
+            #     modules.append(nn.Linear(decoder_net[i], decoder_net[i + 1]))
+            #     modules.append(vae_act_func)
+            # modules.pop()  # Drop last activation function
+            # decoder = ZIDirichletDecoder(nn.Sequential(*modules))
 
         # Defining prior
         prior = NormalPrior(d_z)
