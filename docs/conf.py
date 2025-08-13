@@ -67,8 +67,8 @@ intersphinx_mapping = {
 # -- Options for HTML output -------------------------------------------------
 
 html_theme = "sphinx_book_theme"
-html_logo = "https://raw.githubusercontent.com/Multiomics-Analytics-Group/abaco/refs/heads/main/docs/figures/overview.png"
-html_favicon = "https://raw.githubusercontent.com/Multiomics-Analytics-Group/abaco/refs/heads/main/docs/figures/overview.png"
+html_logo = "https://raw.githubusercontent.com/Multiomics-Analytics-Group/abaco/HEAD/docs/images/logo/abaco_logo.svg"
+html_favicon = "https://raw.githubusercontent.com/Multiomics-Analytics-Group/abaco/HEAD/docs/images/logo/abaco_logo.svg"
 html_theme_options = {
     "github_url": "https://github.com/Multiomics-Analytics-Group/abaco",
     "repository_url": "https://github.com/Multiomics-Analytics-Group/abaco",
