@@ -1,5 +1,5 @@
 # ABaCo
-![img](docs/figures/overview.png)
+![img](https://raw.githubusercontent.com/Multiomics-Analytics-Group/abaco/refs/heads/main/docs/figures/overview.png)
 
 <h1 align="center">ABaCo</h1>
 <p align="center"><em>Batch Effect Correction framework for metagenomic data</em></p>
@@ -35,10 +35,16 @@ The integration of metagenomic data from multiple studies and experimental condi
 - [License](#license)
 
 ## Installation 
+
+ABaCo is available on PyPI: 
+```bash
+pip install abaco
+```
+
 ## Features
 ## Usage
 ## Documentation
-Tutorials and documentation are available on [Read the Docs](https://abaco.readthedocs.io/)
+Tutorials and documentation are available on [Read the Docs](https://mona-abaco.readthedocs.io/)
 ## Contributing
 1. Fork the repository
 2. Clone the repository

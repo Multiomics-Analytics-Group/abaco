@@ -51,7 +51,7 @@
 # `abaco` provides a `BatchEffectDataLoader.dataPreprocess()` function to help convert a plain text file (e.g, csv, tsv) into a compatible pd.DataFrame format, and a `onehotencoding()` function to encode categorical columns. 
 
 # %%
-from abaco.BatchEffectDataLoader import DataPreprocess, one_hot_encoding
+from abaco.dataloader import DataPreprocess, one_hot_encoding
 
 # Load AD count
 path_to_dataset = "data/dataset_ad.csv"
@@ -91,7 +91,7 @@ print(f"Biological classes: {ohe_bio_classes}")
 # `abaco` also provides plotting functions to easily explore the data. Here we use `BatchEffectPlots.plotPCoA()` to visualize the batch and biological effects on the data.
 
 # %%
-from abaco.BatchEffectPlots import plotPCoA
+from abaco.plots import plotPCoA
 import plotly.io as pio
 pio.renderers.default = "notebook_connected"
 # pcoa
@@ -154,10 +154,10 @@ model = metaABaCo(
 help(metaABaCo)
 
 # %% [markdown]
-# For training the model we can call the method `correct()` part of the `metaABaCo()` class with the default parameters.
+# For training the model we can call the method `metaABaCo.fit()` with the default parameters.
 
 # %% tags=["hide-output"]
-model.correct(seed=42)
+model.fit(seed=42)
 
 # %% [markdown]
 # After training the abaco model we can use it to reconstruct the AD dataset without the batch variance while keeping the biological variance.
@@ -168,11 +168,11 @@ model.correct(seed=42)
 # ## ABaCo data reconstruction
 
 # %% [markdown]
-# To reconstruct the dataset we use the method `reconstruct()` from the `metaABaCo()` class.
+# To reconstruct the dataset we use the method `metaABaco.correct()`.
 
 # %%
 # Reconstruct the dataset using the trained ABaCo model
-corrected_dataset = model.reconstruct(seed=42)
+corrected_dataset = model.correct(seed=42)
 
 # Plot the PCoA of the reconstructed dataset
 plotPCoA(

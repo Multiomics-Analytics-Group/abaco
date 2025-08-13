@@ -719,7 +719,9 @@ def correctConQuR(
     if reference_batch is None:
         reference_batch = {
             batch: ref
-            for batch, ref in zip(batch_cols, np.zeros(len(batch_cols), dtype=int))
+            for batch, ref in zip(
+                batch_cols, np.zeros(len(batch_cols), dtype=int), strict=False
+            )
         }
     # Create model
     conq = ConQur(
