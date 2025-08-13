@@ -1,4 +1,4 @@
-# ![ABaCo Logg](https://raw.githubusercontent.com/Multiomics-Analytics-Group/abaco/HEAD/docs/images/logo/abaco_logo.png)
+![ABaCo Logo](https://raw.githubusercontent.com/Multiomics-Analytics-Group/abaco/HEAD/docs/images/logo/abaco_logo.png)
 
 <p align="center"><em>Batch Effect Correction framework for metagenomic data</em></p>
 
