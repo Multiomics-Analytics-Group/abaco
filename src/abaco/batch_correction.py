@@ -547,7 +547,7 @@ class ConQur(TransformerMixin, BaseEstimator):
         cc = [self._col_order.index(c) for c in self.covariate_cols]
         design_idx = bc + cc
         Xd = X_full[:, design_idx]
-        Xd_ref = X_ref[:, design_idx]
+        # Xd_ref = X_ref[:, design_idx]
 
         n, p = X_full.shape
         feat_idx = list(range(len(design_idx), p))
