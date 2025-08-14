@@ -769,7 +769,7 @@ class DirichletMultinomial(td.Distribution):
             dm_sample:
                 Sample(s) from the Dirichlet Multinomial distribution.
         """
-        shape = self._extended_shape(sample_shape)
+        # shape = self._extended_shape(sample_shape)
         p = td.Dirichlet(self.concentration).sample(sample_shape)
 
         batch_dims = p.shape[:-1]
@@ -1207,7 +1207,7 @@ class ConditionalVAE(nn.Module):
                 KL-divergence loss
         """
         q = self.encoder(x)
-        z = q.rsample()
+        # z = q.rsample()
         kl_loss = torch.mean(
             self.beta * td.kl_divergence(q, self.prior()),
             dim=0,
@@ -1359,7 +1359,7 @@ class ConditionalEnsembleVAE(nn.Module):
 
     def kl_div_loss(self, x):
         q = self.encoder(x)
-        z = q.rsample()
+        # z = q.rsample()
         kl_loss = torch.mean(
             self.beta * td.kl_divergence(q, self.prior()),
             dim=0,
@@ -2035,7 +2035,7 @@ def train_abaco(
         for loader_data in data_iter:
             x = loader_data[0].to(device)
             y = loader_data[1].to(device).float()  # Batch label
-            z = loader_data[2].to(device).float()  # Bio type label
+            # z = loader_data[2].to(device).float()  # Bio type label
 
             # VAE ELBO computation with masked batch label
             vae_optim_post.zero_grad()
@@ -2050,8 +2050,8 @@ def train_abaco(
             p_xz = vae.decoder(torch.cat([latent_points, alpha * y], dim=1))
 
             # Log probabilities of prior and posterior
-            log_q_zx = q_zx.log_prob(latent_points)
-            log_p_z = vae.log_prob(latent_points)
+            # log_q_zx = q_zx.log_prob(latent_points)
+            # log_p_z = vae.log_prob(latent_points)
 
             # Compute ELBO
             recon_term = p_xz.log_prob(x).mean()
@@ -2829,7 +2829,7 @@ def train_abaco_ensemble(
         for loader_data in data_iter:
             x = loader_data[0].to(device)
             y = loader_data[1].to(device).float()  # Batch label
-            z = loader_data[2].to(device).float()  # Bio type label
+            # z = loader_data[2].to(device).float()  # Bio type label
 
             # VAE ELBO computation with masked batch label
             vae_optim_post.zero_grad()
@@ -2849,8 +2849,8 @@ def train_abaco_ensemble(
                 p_xzs.append(p_xz)
 
             # Log probabilities of prior and posterior
-            log_q_zx = q_zx.log_prob(latent_points)
-            log_p_z = vae.log_prob(latent_points)
+            # log_q_zx = q_zx.log_prob(latent_points)
+            # log_p_z = vae.log_prob(latent_points)
 
             # Compute ELBO
 
@@ -4529,7 +4529,7 @@ class metaABaCo(nn.Module):
         for loader_data in iter(self.dataloader):
             x = loader_data[0].to(self.device)
             ohe_batch = loader_data[1].to(self.device).float()  # Batch label
-            ohe_bio = loader_data[2].to(self.device).float()  # Bio type label
+            # ohe_bio = loader_data[2].to(self.device).float()  # Bio type label
 
             # Encode and decode the input data along with the one-hot encoded batch label
             q_zx = self.vae.encoder(torch.cat([x, ohe_batch], dim=1))  # td.Distribution
