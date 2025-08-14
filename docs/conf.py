@@ -65,7 +65,7 @@ intersphinx_mapping = {
 }
 
 # -- Options for HTML output -------------------------------------------------
-
+html_title = "ABaCo Documentation"
 html_theme = "sphinx_book_theme"
 html_logo = "https://raw.githubusercontent.com/Multiomics-Analytics-Group/abaco/HEAD/docs/images/logo/abaco_logo.svg"
 html_favicon = "https://raw.githubusercontent.com/Multiomics-Analytics-Group/abaco/HEAD/docs/images/logo/abaco_logo.svg"
