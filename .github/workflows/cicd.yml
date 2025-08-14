@@ -85,7 +85,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags')
     needs:
       - format
-      #- lint todo fix errors
+      - lint
       - test
       - build_source_dist
     runs-on: ubuntu-latest
