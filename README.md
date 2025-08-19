@@ -21,26 +21,46 @@
     <img src="https://img.shields.io/github/stars/Multiomics-Analytics-Group/abaco?style=social" alt="GitHub stars">
 </p>
 
+## Table of Contents
+
+- [About the project](#about-the-project)
+- [Installation](#installation)
+- [Features](#features)
+- [Usage](#usage)
+- [Documentation](#documentation)
+- [License](#license)
+- [Contributing](#contributing)
+- [Credits and acknowledgements](#credits-and-acknowledgements)
+- [Contact and feedback](#contact-and-feedback)
+
+## About the project
+
 The integration of metagenomic data from multiple studies and experimental conditions is essential to understand the interactions between microbial communities in complex biological systems, but the inherent diversity and biological complexity pose methodological challenges that require refined strategies for atlas-level integration. ABaCo, a family of generative models based on Variational Autoencoders (VAEs) combined with an adversarial training, aim for the integration of metagenomic data from different studies by minimizing technical heterogeneity conserving biological significance. The VAE encodes the data into a latent space, while the discriminator is trained to detect the provenance of the data, eliminating variability associated with its origin; concurrently, the data is modeled using distributions suitable for raw counts, and the latent space follows a clustering prior to ensure biological conservation.
 
 An overview of the ABaCo workflow is shown in the figure below:
 
 ![ABaCo Abstract](https://raw.githubusercontent.com/Multiomics-Analytics-Group/abaco/HEAD/docs/images/abaco_overview.png)
 
-## Table of Contents
+## Installation
 
-- [Installation](#installation)
-- [Features](#features)
-- [Usage](#usage)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
+> [!TIP]
+> It is recommended to install ABaCo inside a virtual environment to manage depenendencies and avoid conflicts with existing packages. You can use the virtual environment manager of your choice, such as `poetry`, `conda`, or `pipenv`.
 
-## Installation 
+### Pip
 
-ABaCo is available on PyPI: 
+ABaCo is available on [PyPI][abaco-pypi] and can be installed using pip: 
+
 ```bash
 pip install abaco
+```
+
+You can also install the package for development by cloning this repository and running the following command:
+
+> [!WARNING]
+> We assume you are in the root directory of the cloned repository when running this command. Otherwise, you need to specify the path to the `abaco` directory.
+
+```bash
+pip install -e .
 ```
 
 ## Features
@@ -48,28 +68,32 @@ pip install abaco
 ## Usage
 
 ## Documentation
-Tutorials and documentation are available on [Read the Docs](https://mona-abaco.readthedocs.io/)
 
-## Contributing
-1. Fork the repository
-2. Clone the repository
-3. Create a virtual env e.g.
-  ```bash
-  # navigate terminal to repo
-  cd <path-to-repo-root>
-
-  # create virtual env
-  python -m venv .venv
-
-  # activate venv
-  source .venv/bin/activate
-  ```
-4. Install abaco in editing mode into the virtual env
-  ```bash
-  pip install -e .
-  ```
-5. Make changes
-  > Note: we aimt o use numpy style python docstrings [sphinx example](https://www.sphinx-doc.org/en/master/usage/extensions/example_numpy.html#example-numpy)
-6. Make a pull request
+ABaCo's documentation is hosted on [Read the Docs][abaco-docs]. It includes detailed examples, configuration options, and the API reference. 
 
 ## License
+
+The code in this repository is licensed under the **MIT License**, allowing you to use, modify, and distribute it freely as long as you include the original copyright and license notice.
+
+The documentation and other creative content are licensed under the **Creative Commons Attribution 4.0 International (CC BY 4.0) License**, meaning you are free to share and adapt it with proper attribution.
+
+Full details for both licenses can be found in the [LICENSE][abaco-license] file.
+
+## Contributing
+
+ABaCo is an open-source project, and we welcome contributions of all kinds via GitHub issues and pull requests. You can report bugs, suggest improvements, propose new features, or implement changes. Please follow the guidelines in the [CONTRIBUTING](CONTRIBUTING.md) file to ensure that your contribution is easily integrated into the project.
+
+## Credits and acknowledgements
+
+- ABaCo was developed by the [Multiomics Network Analytics Group (MoNA)][Mona] at the [Novo Nordisk Foundation Center for Biosustainability (DTU Biosustain)][Biosustain].
+
+## Contact and feedback
+
+We appreciate your feedback! If you have any comments, suggestions, or run into issues while using ABaCo, feel free to [open an issue][new-issue] in this repository. Your input helps us make ABaCo better for everyone.
+
+[abaco-pypi]: https://pypi.org/project/abaco/
+[abaco-license]: https://github.com/Multiomics-Analytics-Group/abaco/blob/main/LICENSE.md
+[abaco-docs]: https://mona-abaco.readthedocs.io/
+[Mona]: https://multiomics-analytics-group.github.io/
+[Biosustain]: https://www.biosustain.dtu.dk/
+[new-issue]:https://github.com/Multiomics-Analytics-Group/abaco/issues/new
