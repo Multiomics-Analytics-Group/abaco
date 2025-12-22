@@ -55,6 +55,7 @@ python-dateutil
 pytz
 PyYAML
 requests
+scanpy
 scikit-bio
 scikit-learn
 scipy
