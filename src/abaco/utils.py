@@ -5,7 +5,7 @@ import os
 import sys
 from datetime import datetime
 from urllib.parse import urlparse, urlunsplit
-import pandas as pd 
+import pandas as pd
 
 # import yaml
 
@@ -464,7 +464,6 @@ def df_joiner(
     on: str,
     how: str = "outer",
 ) -> pd.DataFrame:
-    
     """
     Join multiple dataframes on a common column.
 
@@ -496,8 +495,7 @@ def df_joiner(
     if how not in ["left", "right", "outer", "inner"]:
         raise ValueError(f"how must be one of 'left', 'right', 'outer', 'inner': {how}")
 
-
-    ## MAIN FUNCTION 
+    ## MAIN FUNCTION
     # dfs into a list
     df_list = list(df_dict.values())
     # init the merged df with the first one
