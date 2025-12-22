@@ -3567,7 +3567,12 @@ class MoCPPrior(nn.Module):
                     kl_matrix[i, j] = kl
 
         # Take the minimum KL divergence between any two components
-        min_kl = kl_matrix[kl_matrix > 0].min()
+        positive_kl = kl_matrix[kl_matrix > 0]
+        if positive_kl.numel() == 0:
+            # Handle the case where there are no positive KL values
+            min_kl = 0.0  # or float('inf'), or another default
+        else:
+            min_kl = positive_kl.min()
         # Loss is inverse of min KL (maximize separation)
         return 1.0 / (min_kl + 1e-8)
 
@@ -3702,7 +3707,12 @@ class VMMPrior(nn.Module):
                     kl_matrix[i, j] = kl
 
         # Take the minimum KL divergence between any two components
-        min_kl = kl_matrix[kl_matrix > 0].min()
+        positive_kl = kl_matrix[kl_matrix > 0]
+        if positive_kl.numel() == 0:
+            # Handle the case where there are no positive KL values
+            min_kl = 0.0  # or float('inf'), or another default
+        else:
+            min_kl = positive_kl.min()
         # Loss is inverse of min KL (maximize separation)
         return 1.0 / (min_kl + 1e-8)
 
