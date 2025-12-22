@@ -5,6 +5,7 @@ import os
 import sys
 from datetime import datetime
 from urllib.parse import urlparse, urlunsplit
+import pandas as pd 
 
 # import yaml
 
@@ -456,3 +457,52 @@ def get_logger():
 #     assert isinstance(contents, dict), "content not returned as a dict"
 
 #     return contents
+
+
+def df_joiner(
+    df_dict: dict[pd.DataFrame],
+    on: str,
+    how: str = "outer",
+) -> pd.DataFrame:
+    
+    """
+    Join multiple dataframes on a common column.
+
+    Parameters
+    ----------
+    df_dict : dict of pandas.DataFrame
+        Dictionary of dataframes to join.
+    on : str, optional
+        Column to join on. Defaults to "taxa".
+    how : str, optional
+        Type of join. Defaults to "outer".
+
+    Returns
+    -------
+    pandas.DataFrame
+        Joined dataframe.
+    """
+
+    ## PRECONDITION CHECKS
+    if not isinstance(df_dict, dict):
+        raise TypeError(f"df_dict must be a dict: {type(df_dict)}")
+    if not isinstance(on, str):
+        raise TypeError(f"on must be a str: {type(on)}")
+    for key, df in df_dict.items():
+        if not isinstance(df, pd.DataFrame):
+            raise TypeError(f"df_dict values must be pd.DataFrame: {type(df)}")
+        if (on not in df.columns) and (on not in df.index.names):
+            raise ValueError(f"Column '{on}' not found in dataframe with key '{key}'")
+    if how not in ["left", "right", "outer", "inner"]:
+        raise ValueError(f"how must be one of 'left', 'right', 'outer', 'inner': {how}")
+
+
+    ## MAIN FUNCTION 
+    # dfs into a list
+    df_list = list(df_dict.values())
+    # init the merged df with the first one
+    df_merged = df_list[0]
+    # for all others, merge iteratively
+    for df in df_list[1:]:
+        df_merged = pd.merge(df_merged, df, on=on, how=how)
+    return df_merged
