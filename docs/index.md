@@ -13,6 +13,7 @@
 
 tutorial/tutorial-anaerobic-digestion
 tutorial/demo-mgnify-mgys-1135
+tutorial/demo-mgnify-tomatoes
 ```
 
 ```{toctree}
