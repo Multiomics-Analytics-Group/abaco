@@ -3864,7 +3864,7 @@ class VAE(nn.Module):
         q_zx = self.encoder(z)
 
         # 2. Get the prior distribution
-        if isinstance(self.prior, MoCPPrior):
+        if isinstance(self.prior, (MoCPPrior, VMMPrior)):
             p_z = self.prior(k_ohe)  # select Gaussian component of the prior
         else:
             p_z = self.prior()  # sample from standard Gaussian prior
@@ -4016,7 +4016,7 @@ class metaABaCo(nn.Module):
             self.prior = MoCPPrior(d_z, n_bios)
 
         elif prior == "VMM":
-            self.encoder = MoGEncoder(nn.Sequential(*modules), n_bios)
+            self.encoder = MoCPEncoder(nn.Sequential(*modules), n_bios)
             self.prior = VMMPrior(
                 d_z,
                 n_features,
@@ -4161,7 +4161,7 @@ class metaABaCo(nn.Module):
                 bio_penalty = 0.0  # ensures points from the same biological group to be mapped on the same cluster
                 cluster_penalty = 0.0  # ensures gaussian components to not overlap
 
-                if isinstance(self.vae.prior, MoCPPrior):
+                if isinstance(self.vae.prior, (MoCPPrior, VMMPrior)):
                     # Compute penalty for biological mapping
                     pred_bio, _, _ = self.vae.encoder.encode(
                         torch.cat([x, ohe_batch], dim=1)
@@ -4280,7 +4280,7 @@ class metaABaCo(nn.Module):
                 bio_penalty = 0.0  # ensures points from the same biological group to be mapped on the same cluster
                 cluster_penalty = 0.0  # ensures gaussian components to not overlap
 
-                if isinstance(self.vae.prior, MoCPPrior):
+                if isinstance(self.vae.prior, (MoCPPrior, VMMPrior)):
                     # Compute penalty for biological mapping
                     pred_bio, _, _ = self.vae.encoder.encode(
                         torch.cat([x, ohe_batch], dim=1)
@@ -4289,11 +4289,6 @@ class metaABaCo(nn.Module):
                     bio_penalty += (w_bio_penalty) * F.cross_entropy(
                         pred_bio, ohe_bio.argmax(dim=1)
                     )
-
-                    # Compute penalty for group clusters
-                    cluster_penalty += (
-                        w_cluster_penalty
-                    ) * self.vae.prior.cluster_loss()
 
                 # Total loss is reconstruction loss + KL divergence loss
                 vae_loss = recon_loss + kl_loss + bio_penalty + cluster_penalty
