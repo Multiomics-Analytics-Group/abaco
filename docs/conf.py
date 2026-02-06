@@ -15,6 +15,19 @@ release = PACKAGE_VERSION
 
 # -- General configuration ---------------------------------------------------
 
+# Mock imports to avoid import errors during documentation build
+autodoc_mock_imports = [
+    "torch",
+    "transformers",
+    "pandas",
+    "numpy",
+    "scipy",
+    "sklearn",
+    "matplotlib",
+    "seaborn",
+    "plotly",
+]
+
 extensions = [
     "sphinx.ext.autodoc",  # Core extension for generating documentation from docstrings
     "sphinx.ext.autodoc.typehints",  # Automatically document type hints in function signatures
@@ -27,8 +40,10 @@ extensions = [
 ]
 
 #  https://myst-nb.readthedocs.io/en/latest/computation/execute.html
-nb_execution_mode = "auto"
-nb_execution_timeout = -1  # -1 means no timeout
+nb_execution_mode = "off"  # setting off to avoid notebooks to be runned
+nb_execution_timeout = (
+    -1
+)  # -1 means no timeout (after 15 minutes it times out regardless of this setting)
 myst_enable_extensions = ["dollarmath", "amsmath"]
 
 # Plotly support through require javascript library
@@ -79,9 +94,7 @@ html_theme_options = {
     "use_edit_page_button": True,
     "use_repository_button": True,
     "use_download_button": True,
-    "launch_buttons": {
-        "colab_url": "https://colab.research.google.com"
-    },
+    "launch_buttons": {"colab_url": "https://colab.research.google.com"},
     "navigation_with_keys": False,
 }
 
