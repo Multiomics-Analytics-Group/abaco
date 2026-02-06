@@ -12,8 +12,17 @@
 :caption: "Getting started tutorials"
 
 tutorial/tutorial-anaerobic-digestion
+tutorial/tutorial-ibd
 tutorial/demo-mgnify-mgys-1135
 tutorial/demo-mgnify-tomatoes
+tutorial/demo-parkinson
+```
+
+```{toctree}
+:maxdepth: 3
+:caption: "Fine-tuning and computational performance report"
+
+tutorial/report-performance
 ```
 
 ```{toctree}
